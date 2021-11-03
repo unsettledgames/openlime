@@ -1,4 +1,13 @@
 /**
+ *  The transform represent a 3d persective transform:
+ *  (x, y, and h()) are eye position, looking at (x + tx, x + ty 0)  (in pixels)
+ *   h in pixels combined with the screen width defines the fov w/h = sin(fov/2)
+ *   a is the roll of the camera (in degrees)
+ * 
+ *  The transform projectsa point (x, y, z) to screen coordinates (X Y), all in pixels.
+ *  2D images can be transformed in the plane just having tx and ty = 0.
+ * 
+ * To get the actual webgl matrix, we need the viewport.
  * 
  * @param {number} x position
  * @param {number} y position
@@ -12,7 +21,12 @@ import { BoundingBox } from "./BoundingBox";
 
 class Transform {
 	constructor(options) {
-		Object.assign(this, { x:0, y:0, z:1, a:0, t:0 });
+		Object.assign(this, { x:0, y:0, z:1, a:0, t:0, tx: 0, ty: 0, h: 1 });
+
+		this.viewMatrix = null;
+		this.projectionMatrix = null; //transform between image coordinate space and screen space (in pixels, 0,0 centered)
+		this.inverseProjectionMatrix = null;
+		this.webGLMatrix = null;  //projectionMatrix but in normalized display coordinates.
 
 		if(!this.t) this.t = performance.now();
 		
@@ -27,6 +41,11 @@ class Transform {
 	}
 
 	apply(x, y) {
+
+		let p = this.projectionMatrix();
+		let v = matrixApply(p, [x, y, 0]);
+		return {x: v[0], y: v[1]};
+		
 		//TODO! ROTATE
 		let r = Transform.rotate(x, y, this.a);
 		return { 
@@ -34,8 +53,14 @@ class Transform {
 			y: r.y*this.z + this.y
 		}
 	}
+	applyMatrix(m, y, x) {
+		let v = matrixApply(m, [x, y, 0]);
+		return {x: v[0], y: v[1]};
+	}
 
-	inverse() {
+	getInverseProjectionMatrix() {
+		return inverseMatrix(this.projectionMatrix());
+
 		let r = Transform.rotate(this.x/this.z, this.y/this.z, -this.a);
 		return new Transform({x:-r.x, y:-r.y, z:1/this.z, a:-this.a, t:this.t});
 	}
@@ -55,6 +80,11 @@ class Transform {
 
 	// first get applied this (a) then  transform (b).
 	compose(transform) {
+		let t = new Transform();
+		t.projectionMatrix = matrixMul(this.projectionMatrix, transform.projectionMatrix);
+		t.inverseProjectionMatrix = t.getInverseProjectionMatrix();
+		return t;
+
 		let a = this.copy();
 		let b = transform;
 		a.z *= b.z;
@@ -79,7 +109,7 @@ class Transform {
 /*  get the bounding box (in image coordinate sppace) of the vieport. 
  */
 	getInverseBox(viewport) {
-		let inverse = this.inverse();
+		//let inverse = this.inverse();
 		let corners = [
 			{x:viewport.x,               y:viewport.y},
 			{x:viewport.x + viewport.dx, y:viewport.y},
@@ -88,7 +118,9 @@ class Transform {
 		];
 		let box = new BoundingBox();
 		for(let corner of corners) {
-			let p = inverse.apply(corner.x -viewport.w/2, corner.y - viewport.h/2);
+			//let p = inverse.apply(corner.x -viewport.w/2, corner.y - viewport.h/2);
+			//let p = inverse.applyMatrix(inverse, corner.x -viewport.w/2, corner.y - viewport.h/2);
+			let p = this.applyMatrix(this.inverseProjectionMatrix, corner.x -viewport.w/2, corner.y - viewport.h/2);
 			box.mergePoint(p);
 		}
 		return box;
@@ -116,9 +148,32 @@ class Transform {
  *  Combines the transform with the viewport to the viewport with the transform
  * @param {Object} transform a {@link Transform} class.
  */
-	projectionMatrix(viewport) {
-		let z = this.z;
+	getViewMatrix() {
 
+		let h = this.h();
+		let eye = [-this.x -this.y, h]; //this is actually -eye
+		let target = [this.x + this.tx, this.y + ty, 0]
+		let y = [target[0] + eye[0], target[1] + eye[1], target[2] + eye[2]]
+		let z = [0, 0, 1]
+		let x = cross(y, z);
+		
+		let matrix = [ 
+			x[0], y[0], z[0], 0,
+			x[1], y[1], z[1], 0,
+			dot(x, eye), dot(y, eye), dot(z, eye), 1
+		];
+	}
+
+	getProjectionMatrix() { 
+		let f = this.z*this.h;
+		let matrix = [ 
+			f, 0, 0, 0,
+			0, f, 0, 0,
+			0, 0, 0, 0,
+			0, 0, -1, 0];
+		matrix = matrixMul(matrix, this.viewMatrix);
+		return matrix;
+/*		
 		// In coords with 0 in lower left corner map x0 to -1, and x0+v.w to 1
 		// In coords with 0 at screen center and x0 at 0, map -v.w/2 -> -1, v.w/2 -> 1 
 		// With x0 != 0: x0 -> x0-v.w/2 -> -1, and x0+dx -> x0+v.dx-v.w/2 -> 1
@@ -137,6 +192,32 @@ class Transform {
 			-Math.sin(a)*zx*z, Math.cos(a)*zy*z,  0,  0,
 			 0,  0,  1,  0,
 			dx, dy, 0,  1];
+		return matrix; */
+	}
+
+	webGLMatrix(viewport, near, far) {
+
+		let ratio = h/w;
+		let height = this.height(); 
+
+		let l =  viewport.x - viewport.w/2;
+		let r =  l + viewport.dx
+		let b =  viewport.y - viewport.h/2;
+		let t =  b + viewport.dy;
+
+		let n = near;
+		let f = far;
+
+		let A =  - (f + n)/(f - n);
+		let B = 2 * f * n/ (f - n);
+
+		let matrix = [
+			2*n/(r -l), 0, 0, 0,
+			0, 2*n(t - b), 0, 0, 
+			0, 0, A, B,
+			0, 0, -1, 0
+		];
+		matrix = matrixMul(matrix, this.viewMatrix);
 		return matrix;
 	}
 
@@ -177,6 +258,26 @@ class Transform {
 
 }
 
+function dot(a, b) {
+	return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+}
+
+function cross(a, b) {
+	return [
+		a[1]*b[2] - a[2]*b[1],
+		a[2]*b[0] - a[0]*b[2],
+		a[0]*b[1] - a[1]*b[0]
+	];
+}
+
+function matrixApply(m, v) {
+	let x = v[0]*m[0] + v[1] *m[4] + v[2]*m[8]  +m[12];
+	let y = v[0]*m[1] + v[1] *m[5] + v[2]*m[9]  +m[13];
+	let z = v[0]*m[2] + v[1] *m[6] + v[2]*m[10] +m[14];
+	let w = v[0]*m[3] + v[1] *m[7] + v[2]*m[11] +m[15];
+	return [x/w, y/w, z/w];
+}
+
 function matrixMul(a, b) {
 	let r = new Array(16);
 	for (let i = 0; i < 4; i++) {
@@ -212,6 +313,55 @@ function matMul(a, b) {
 	r[14] = a[2]*b[12] + a[6]*b[13] + a[10]*b[14] + a[14]*b[15];
 	r[15] = a[3]*b[12] + a[7]*b[13] + a[11]*b[14] + a[15]*b[15];
 	return r;
+}
+
+function invertMatrix(M) {
+
+	function m(r, c) { return M[4*r + c]; }
+    let A2323 = m(2, 2) * m(3, 3) - m(2, 3) * m(3, 2);
+    let A1323 = m(2, 1) * m(3, 3) - m(2, 3) * m(3, 1);
+    let A1223 = m(2, 1) * m(3, 2) - m(2, 2) * m(3, 1);
+    let A0323 = m(2, 0) * m(3, 3) - m(2, 3) * m(3, 0);
+    let A0223 = m(2, 0) * m(3, 2) - m(2, 2) * m(3, 0);
+    let A0123 = m(2, 0) * m(3, 1) - m(2, 1) * m(3, 0);
+    let A2313 = m(1, 2) * m(3, 3) - m(1, 3) * m(3, 2);
+    let A1313 = m(1, 1) * m(3, 3) - m(1, 3) * m(3, 1);
+    let A1213 = m(1, 1) * m(3, 2) - m(1, 2) * m(3, 1);
+    let A2312 = m(1, 2) * m(2, 3) - m(1, 3) * m(2, 2);
+    let A1312 = m(1, 1) * m(2, 3) - m(1, 3) * m(2, 1);
+    let A1212 = m(1, 1) * m(2, 2) - m(1, 2) * m(2, 1);
+    let A0313 = m(1, 0) * m(3, 3) - m(1, 3) * m(3, 0);
+    let A0213 = m(1, 0) * m(3, 2) - m(1, 2) * m(3, 0);
+    let A0312 = m(1, 0) * m(2, 3) - m(1, 3) * m(2, 0);
+    let A0212 = m(1, 0) * m(2, 2) - m(1, 2) * m(2, 0);
+    let A0113 = m(1, 0) * m(3, 1) - m(1, 1) * m(3, 0);
+    let A0112 = m(1, 0) * m(2, 1) - m(1, 1) * m(2, 0);
+
+    det = m(0, 0) * ( m(1, 1) * A2323 - m(1, 2) * A1323 + m(1, 3) * A1223 )
+        - m(0, 1) * ( m(1, 0) * A2323 - m(1, 2) * A0323 + m(1, 3) * A0223 )
+        + m(0, 2) * ( m(1, 0) * A1323 - m(1, 1) * A0323 + m(1, 3) * A0123 )
+        - m(0, 3) * ( m(1, 0) * A1223 - m(1, 1) * A0223 + m(1, 2) * A0123 );
+    det = 1 / det;
+
+	let im = [
+    	det *   ( m(1, 1) * A2323 - m(1, 2) * A1323 + m(1, 3) * A1223 ),
+    	det * - ( m(0, 1) * A2323 - m(0, 2) * A1323 + m(0, 3) * A1223 ),
+    	det *   ( m(0, 1) * A2313 - m(0, 2) * A1313 + m(0, 3) * A1213 ),
+    	det * - ( m(0, 1) * A2312 - m(0, 2) * A1312 + m(0, 3) * A1212 ),
+    	det * - ( m(1, 0) * A2323 - m(1, 2) * A0323 + m(1, 3) * A0223 ),
+    	det *   ( m(0, 0) * A2323 - m(0, 2) * A0323 + m(0, 3) * A0223 ),
+    	det * - ( m(0, 0) * A2313 - m(0, 2) * A0313 + m(0, 3) * A0213 ),
+    	det *   ( m(0, 0) * A2312 - m(0, 2) * A0312 + m(0, 3) * A0212 ),
+    	det *   ( m(1, 0) * A1323 - m(1, 1) * A0323 + m(1, 3) * A0123 ),
+    	det * - ( m(0, 0) * A1323 - m(0, 1) * A0323 + m(0, 3) * A0123 ),
+    	det *   ( m(0, 0) * A1313 - m(0, 1) * A0313 + m(0, 3) * A0113 ),
+    	det * - ( m(0, 0) * A1312 - m(0, 1) * A0312 + m(0, 3) * A0112 ),
+    	det * - ( m(1, 0) * A1223 - m(1, 1) * A0223 + m(1, 2) * A0123 ),
+    	det *   ( m(0, 0) * A1223 - m(0, 1) * A0223 + m(0, 2) * A0123 ),
+    	det * - ( m(0, 0) * A1213 - m(0, 1) * A0213 + m(0, 2) * A0113 ),
+    	det *   ( m(0, 0) * A1212 - m(0, 1) * A0212 + m(0, 2) * A0112 )
+	];
+	return im;
 }
 
 export { Transform, matMul }

@@ -60,14 +60,14 @@ class Raster {
 
 	async blobToImage(blob, gl) {
 		let tex, img;
-		if(typeof createImageBitmap != 'undefined') {
-			var isFirefox = typeof InstallTrigger !== 'undefined';
-			//firefox does not support options for this call, BUT the image is automatically flipped.
-			if(isFirefox)
-				img = await createImageBitmap(blob); 
-			else
-				img = await createImageBitmap(blob, { imageOrientation1: 'flipY' });
 
+		if(typeof createImageBitmap != 'undefined') {
+			try {
+				createImageBitmap(blob, { imageOrientation: 'flipY' }).then(callback);
+			} catch(error) { //old version of firefox do not support options (but flip anyway)
+				createImageBitmap(blob).then(callback);
+			}
+			
 		} else { //fallback for IOS
 			let urlCreator = window.URL || window.webkitURL;
 			img = document.createElement('img');

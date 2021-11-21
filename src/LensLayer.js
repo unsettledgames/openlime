@@ -53,7 +53,7 @@ class LensLayer extends CombinerLayer {
         return this.controls['center'].target.value;
     }
 
-	draw(transform, viewport) {
+	draw(camera) {
 
         let done = this.interpolateControls();
         

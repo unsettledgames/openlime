@@ -125,9 +125,6 @@ class OpenLIME {
 		if(!time) time = performance.now();
 		this.animaterequest = null;
 
-		let viewport = this.camera.viewport;
-		let transform = this.camera.getCurrentTransform(time);
-
 		let done = this.canvas.draw(time);
 		if(!done)
 			this.redraw();

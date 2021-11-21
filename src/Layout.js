@@ -183,8 +183,8 @@ class Layout {
 		tcoords[3] = tcoords[5] = tmp;
 
 		for(let i = 0; i < coords.length; i+= 3) {
-			coords[i]   =  coords[i]  *tx + side*x - this.width/2;
-			coords[i+1] = -coords[i+1]*ty - side*y + this.height/2;
+			coords[i]   =  coords[i]  *tx + side*x;
+			coords[i+1] = -coords[i+1]*ty - side*y;
 		}
 
 		return { coords: coords, tcoords: tcoords }
@@ -197,17 +197,20 @@ class Layout {
  * @param {border} border is radius (in tiles units) of prefetch
  * @returns {object} with level: the optimal level in the pyramid, pyramid: array of bounding boxes in tile units.
  */
-	neededBox(viewport, transform, border, bias) {
+	neededBox(camera, transform, border, bias) {
 		if(this.type == "image")
 			return { level:0, pyramid: [new BoundingBox({ xLow:0, yLow:0, xHigh:1, yHigh:1 })] };
 
+		let z = camera.zoomLevel(transform); //estimated average zoom level in [0, 0] of the canvas.
 		//here we are computing with inverse levels; level 0 is the bottom!
-		let iminlevel = Math.max(0, Math.min(Math.floor(-Math.log2(transform.z) + bias), this.nlevels-1));
+		let iminlevel = Math.max(0, Math.min(Math.floor(-Math.log2(z) + bias), this.nlevels-1));
 		let minlevel = this.nlevels-1-iminlevel;
-		//
-		let bbox = transform.getInverseBox(viewport);
+
+		//compute the bounding box of the camera frustum on the layer. 
+		let bbox = camera.getInverseBox(transform); //transform.getInverseBox(viewport);
 		//find box in image coordinates where (0, 0) is in the upper left corner.
-		bbox.shift(this.width/2, this.height/2);
+		//do not shift, we use pixel coords.
+		//bbox.shift(this.width/2, this.height/2);
 
 		let pyramid = [];
 		for(let level = 0; level <= minlevel; level++) {

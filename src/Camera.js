@@ -1,5 +1,6 @@
 import { Transform } from './Transform.js'
 import { BoundingBox } from './BoundingBox.js'
+import { sum, diff, mul, norm, cross, interp, matrixMul } from './Math.js'
 
 /**
  *  NOTICE TODO: the camera has the transform relative to the whole canvas NOT the viewport.
@@ -13,29 +14,123 @@ import { BoundingBox } from './BoundingBox.js'
  * Emits 'update' event when target is changed.
  */
 
+
+class View {
+	constructor(options) {
+		Object.assign(this, {
+			eye: [0, 0, 1],
+			target: [0, 0, 0], 
+			up: [0, 1, 0],
+			t: 0,
+			matrix: null,
+			inverse: null
+		}, options)
+	}
+	
+	copy() {
+		return new View({
+			eye: [...this.eye],
+			target: [...this.target],
+			up: [...this.up],
+		});
+	}
+	//if zoom bigger than one the position get closer
+	zoom(dz) {
+		//this.position = sum(mul(diff(this.position, this.offset), 1/dz), this.offset);
+		this.eye = sum(this.eye, mul(this.target, 1 - 1/dz));
+		this.matrix = this.inverse = null;
+	}
+	pan(dx, dy) {
+		this.eye[0] += dx;
+		this.eye[1] += dy;
+		this.target[0] += dx;
+		this.target[1] += dy;
+		this.matrix = this.inverse = null;
+	}
+
+	interpolate(source, target, time) {
+		let t = (target.t - source.t);
+
+		this.t = time;
+		if(time < source.t) 
+			return Object.assign(this, source.copy());
+		if(time > target.t || t < 0.0001) 
+			return Object.assign(this, target.copy());		
+
+		let tt = (time - source.t)/t;
+		
+		for(let i of ['eye', 'target', 'up'])
+			this[i] = interp(source[i], target[i], tt);
+		this.matrix = this.inverse = null;
+	}
+
+	project(p){
+		if(!this.matrix)
+			this.lookAt();
+		return applyMatrix(this.matrix, p)
+	}
+
+	unproject(p) {
+		if(!this.matrix)
+			this.loookAt();
+		return applyMatrix(this.inverse, p);
+	}
+
+	lookAt() {
+		let viewdir = diff(this.eye, this.target);	
+		let length = norm(viewdir);
+		if(length === 0)
+			throw "Eye and target are in the same position";
+
+		viewdir = mul(viewdir, 1/length);
+		let dx = cross(this.up, viewdir);
+		length = norm(dx);
+		if(length == 0)
+			throw "up and view direction are parallel";
+
+		dx = mul(dx, 1/length);
+		let dy = cross(viewdir, dx);
+		let dz = viewdir;
+		this.matrix = [ dx[0], dx[1], dx[2], 0,
+		            	dy[0], dy[1], dy[2], 0,
+						dz[0], dz[1], dz[2], 0,
+					    	0,     0,     0, 1];
+		this.inverse = [ dx[0], dy[0], dz[0], 0,
+						 dx[1], dy[1], dz[1], 0,
+						 dx[2], dy[2], dz[2], 0,
+							 0,     0,     0, 1];
+	}
+	getMatrix() {
+		this.lookAt();
+		return this.matrix;
+	}
+}
+
 class Camera {
 
 	constructor(options) {
 		Object.assign(this, {
 			viewport: null,
+			aspect: 1, //w/h
+			fov: 60,
+			near: 0.1,
+			far: 10,
+			matrix: null,
+			inverse: null,
+
 			bounded: true,
 			minScreenFraction: 1,
 			maxFixedZoom: 2,
 			maxZoom: 2,
 			minZoom: 1,
-			boundingBox: new BoundingBox,
+			boundingBox: new BoundingBox, //this is actuallt the scene bounding box.
 
+			animating: true,
 			signals: {'update':[]}
-		});
-		Object.assign(this, options);
-		this.target = new Transform(this.target);
-		this.source = this.target.copy();
-	}
+		}, options);
 
-	copy() {
-		let camera = new Camera();
-		Object.assign(camera, this);
-		return camera;
+		this.target = new View(this.target); //new Transform(this.target);
+		this.source = this.target.copy();
 	}
 
 	addEvent(event, callback) {
@@ -50,38 +145,34 @@ class Camera {
 /**
  *  Set the viewport and updates the camera for an as close as possible.
  */
-	setViewport(view) {
+	setViewport(viewport) {
 		if(this.viewport) {
-			let rz = Math.sqrt((view.w/this.viewport.w)*(view.h/this.viewport.h));
-			this.viewport = view;
-			const {x, y, z, a } = this.target;
-			this.setPosition(0, x, y, z*rz, a);
-		} else {
-			this.viewport = view;
+			let rz = Math.sqrt((viewport.w/this.viewport.w)*(viewport.h/this.viewport.h));
+
+			this.source.zoom(rz);
+			this.target.zoom(rz);
 		}
+		this.aspect = viewport.w / viewport.h;
+		this.viewport = viewport;
+		this.emit('update');
 	}
 
-/**
- *  Map coordinate relative to the canvas into scene coords. using the specified transform.
- * @returns [X, Y] in scene coordinates.
- */
-	mapToScene(x, y, transform) {
-		//compute coords relative to the center of the viewport.
-		x -= this.viewport.w/2;
-		y -= this.viewport.h/2;
-		x -= transform.x;
-		y -= transform.y;
-		x /= transform.z;
-		y /= transform.z;
-		let r = Transform.rotate(x, y, -transform.a);
-		return {x:r.x, y:r.y};
+	setView(view, dt) {
+		if(!dt) dt = 0;
+		if(this.bounded)
+			this.bound(view);
+
+		let now = performance.now();
+		this.source = this.getCurrentView(now);
+		this.target = view.copy();
+		this.target.t = now + dt;
+		this.emit('update');
 	}
 
-	setPosition(dt, x, y, z, a) {
-		// Discard events due to cursor outside window
-		if (Math.abs(x) > 64000 || Math.abs(y) > 64000) return;
+	bound(view) {
+		return;
 
-		if (this.bounded) {
+		/*if (this.bounded) {
 			const sw = this.viewport.dx;
 			const sh = this.viewport.dy;
 
@@ -100,35 +191,77 @@ class Camera {
 
 			const dy = Math.abs(bh-sh)/2;
 			y = Math.min(Math.max(-dy, y), dy);
+		}*/
+	}
+
+
+	getCurrentView(time) {
+		if(!time) time = performance.now();
+		let pos;
+		if(time < this.source.t)
+			pos = this.source.copy()
+		if(time >= this.target.t) {
+			pos = this.target.copy()
+			this.animating = false;
+		} else {
+			pos = new View();
+			pos.interpolate(this.source, this.target, time);
 		}
 
-		let now = performance.now();
-		this.source = this.getCurrentTransform(now);
-		//the angle needs to be interpolated in the shortest direction.
-		//target it is kept between 0 and +360, source is kept relative.
-		a = Transform.normalizeAngle(a);
-		this.source.a = Transform.normalizeAngle(this.source.a);
-		if(a - this.source.a > 180) this.source.a += 360;
-		if(this.source.a - a > 180) this.source.a -= 360;
-		Object.assign(this.target, { x: x, y:y, z:z, a:a, t:now + dt });
-		this.emit('update');
+		pos.t = time;
+		return pos;
 	}
-	
+
+	//Viewport coords are from [0, 0, w, h] of the <canvas> top left
+	//Canvas coords are the viewport but 0, 0 is in the center of the screen and y axis points up.
+	//Scene is where the layers are placed, centered in 0, 0 usually.
+	viewportToScene(x, y) {
+		x = x + this.viewport.x - this.viewport.w/2;
+		y = y - this.viewport.y - this.viewport.h/2;
+		return this.canvasToScene([x, y, 0]);
+	}
+
+	sceneToViewport(x, y) {
+		let pos = sceneToCanvas([x, y, 0]);
+		return [pos[0] - this.viewport.x + this.viewport.w/2,
+				pos[1] + this.viewport.y + this.viewport.h/2]
+	}
+
+	canvasToScene(pos) {
+		pos = this.unproject(pos);
+		let current = this.getCurrentView();
+		return current.unproject(pos);
+	}
+	sceneToCanvas(pos) {
+		let current = this.getCurrentView();
+		pos = current.project(pos);
+		pos = this.project(pos);
+	}
+
+
 
 /*
  * Pan the camera 
  * @param {number} dx move the camera by dx pixels (positive means the image moves right).
  */
-	pan(dt, dx, dy) {
-		let now = performance.now();
-		let m = this.getCurrentTransform(now);
-		m.dx += dx;
-		m.dy += dy;
+	pan(dx, dy, initialView, dt) {
+		let d  = this.viewportToScene([dx, dy, 0])
+		let panned = view.copy();
+		panned.pan(d[0], d[1]);
+		this.setView(view, dt);
+	}
+/* zoom in or zoom out around the x, y point (in pixels, viewport coords)
+*/
+	zoom(dz, x, y, dt) {
+		let view = this.getCurrentView();
+		let pos = this.viewportToScene([x, y, 0]);
+		view.zoom(dz);
+		this.setView(view, dt);
 	}
 
 /* zoom in or out at a specific point in canvas coords!
  * TODO: this is not quite right!
- */
+ 
 	zoom(dt, z, x, y) {
 		if(!x) x = 0;
 		if(!y) y = 0;
@@ -145,17 +278,17 @@ class Camera {
 		m.y += (m.y+y)*(m.z - z)/m.z;
 
 		this.setPosition(dt, m.x, m.y, z, m.a);
-	}
+	} */
 
-	rotate(dt, a) {
+/*	rotate(dt, a) {
 
 		let now = performance.now();
 		let m = this.getCurrentTransform(now);
 
 		this.setPosition(dt, m.x, m.y, m.z, this.target.a + a);
-	}
+	} */
 
-	deltaZoom(dt, dz, x, y) {
+/*	deltaZoom(dt, dz, x, y) {
 		if(!x) x = 0;
 		if(!y) y = 0;
 
@@ -180,21 +313,7 @@ class Camera {
 
 		
 		this.setPosition(dt, m.x, m.y, m.z*dz, m.a);
-	}
-
-
-	getCurrentTransform(time) {
-		let pos = new Transform();
-		if(time < this.source.t)
-			Object.assign(pos, this.source);
-		if(time >= this.target.t)
-			Object.assign(pos, this.target);
-		else 
-			pos.interpolate(this.source, this.target, time);
-
-		pos.t = time;
-		return pos;
-	}
+	} */
 
 /**
  * @param {Array} box fit the specified rectangle [minx, miny, maxx, maxy] in the canvas.
@@ -202,8 +321,7 @@ class Camera {
  * @param {string} size how to fit the image: <contain | cover> default is contain (and cover is not implemented
  */
 
-//TODO should fit keeping the same angle!
-	fit(box, dt, size) {
+	fit(box, dt) {
 		if (box.isEmpty()) return;
 		if(!dt) dt = 0;
 
@@ -216,9 +334,20 @@ class Camera {
 		let bh = box.height();
 		let c = box.center();
 		let z = Math.min(w/bw, h/bh);
+		let sideHeightRatio = Math.tan(0.5*this.fov*Math.PI/180);  //=halfside/h
+		//side is always 1 anyway.
+		//z =number of pixels in viewport/units of the box.
+		//z * bw = side in pixels
+		let eyeh = z*bw / Math.tan(0.5*this.fov*Math.PI/180);
 
-		this.setPosition(dt, -c[0], -c[1], z, 0);
+		let view = new View({
+			eye: [-c[0], -c[1], eyeh], 
+			target: [-c[0], -c[1], 0] 
+		});
+		this.setView(view, dt);
+		console.log(view);
 	}
+
 
 	fitCameraBox(dt) {
 		this.fit(this.boundingBox, dt);
@@ -235,6 +364,46 @@ class Camera {
 		this.minZoom = Math.min(w/bw, h/bh) * this.minScreenFraction;
 		this.maxZoom = minScale > 0 ? this.maxFixedZoom / minScale : this.maxFixedZoom;
 		this.maxZoom = Math.max(this.minZoom, this.maxZoom);
+	}
+
+	//perspective transform
+	getProjectionMatrix() {
+		let top = this.near * Math.tan( 0.5 * this.fov * Math.PI / 180);
+		let height = 2 * top;
+		let width = this.aspect * height;
+		let left = - 0.5 * width;
+		
+		return this.makePerspective( left, left + width, top, top - height, this.near, this.far );
+
+	}
+	//perspective transform combined with current view
+	getProjectionViewMatrix() {
+		let proj = this.getProjectionMatrix();
+		let view = this.getCurrentView();
+		let m = view.getMatrix();
+		return matrixMul(proj, m);
+	}
+
+	////projectionView + transform matrix
+	getMatrix(transform) { 
+		let projview = this.getProjectionViewMatrix();
+		let m = transform.getMatrix();
+		return matrixMul(projview, m);
+	}
+
+	makePerspective( left, right, top, bottom, near, far ) {
+		const x = 2 * near / ( right - left );
+		const y = 2 * near / ( top - bottom );
+
+		const a = ( right + left ) / ( right - left );
+		const b = ( top + bottom ) / ( top - bottom );
+		const c = - ( far + near ) / ( far - near );
+		const d = - 2 * far * near / ( far - near );
+
+		return [x, 0, 0, 0,
+				0, y, 0, 0,
+				a, b, c, -1,
+				0, 0, d, 0];
 	}
 }
 

@@ -11,7 +11,7 @@ class ControllerPanZoom extends Controller {
 		
 		
 		this.panning = false;           //true if in the middle of a pan
-		this.initialTransform = null;
+		this.initialView = null;
 		this.startMouse = null;
 
 		this.zooming = false;           //true if in the middle of a pinch
@@ -25,9 +25,8 @@ class ControllerPanZoom extends Controller {
 
 		this.startMouse = { x: e.offsetX, y: e.offsetY };
 
-		let now = performance.now();
-		this.initialTransform = this.camera.getCurrentTransform(now);
-		this.camera.target = this.initialTransform.copy(); //stop animation.
+		this.initialView = this.camera.getCurrentView();
+		this.camera.target = this.initialView.copy(); //stop animation.
 		e.preventDefault();
 	}
 
@@ -35,11 +34,11 @@ class ControllerPanZoom extends Controller {
 		if (!this.panning)
 			return;
 
-		let m = this.initialTransform;
+		let m = this.initialView;
 		let dx = (e.offsetX - this.startMouse.x);
 		let dy = (e.offsetY - this.startMouse.y);
 		
-		this.camera.setPosition(this.panDelay, m.x + dx, m.y + dy, m.z, m.a);
+		this.camera.pan(dx, dy, this.initialView, this.pandelay);
 	}
 
 	panEnd(e) {

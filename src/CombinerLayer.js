@@ -32,7 +32,7 @@ class CombinerLayer extends Layer {
 	}
 
 
-	draw(transform, viewport) {
+	draw(camera) {
 		for(let layer of this.layers)
 			if(layer.status != 'ready')
 				return;
@@ -40,6 +40,7 @@ class CombinerLayer extends Layer {
 		if(!this.shader)
 			throw "Shader not specified!";
 
+		let viewport = camera.viewport;
 		let w = viewport.dx;
 		let h = viewport.dy;
 
@@ -61,7 +62,9 @@ class CombinerLayer extends Layer {
 		for(let i = 0; i < this.layers.length; i++) { 
 			gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffers[i]);
 			gl.clear(gl.COLOR_BUFFER_BIT);
-			this.layers[i].draw(transform, {x:0, y:0, dx:w, dy:h, w:w, h:h});
+			let cam = camera.copy();
+			cam.setViewport({x:0, y:0, dx:w, dy:h, w:w, h:h});
+			this.layers[i].draw(camera);
 			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		}
 

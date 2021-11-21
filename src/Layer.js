@@ -86,9 +86,7 @@ class Layer {
 							//only raster used by the shader will be loade.
 			queue: [],     //queue of tiles to be loaded.
 			requested: {},  //tiles requested.
-		});
-
-		Object.assign(this, options);
+		}, options);
 
 		this.transform = new Transform(this.transform);
 
@@ -112,6 +110,7 @@ class Layer {
 	setLayout(layout) {
 		let callback = () => {
 			this.status = 'ready';
+			console.log('set transform if not present with center 0, 0 and y -> up');
 			this.setupTiles(); //setup expect status to be ready!
 			this.emit('ready');
 			this.emit('update');
@@ -186,11 +185,13 @@ class Layer {
 		return layersScale;
 	}
 
+	//return the scale from the layer to the scale (on top of that there will be the camera to compute the actual zoom level.)
 	scale() {
 		// FIXME: this do not consider children layers
 		return this.transform.z;
 	}
 
+	//again in canvas coords
 	boundingBox() {
 		// FIXME: this do not consider children layers
 		// Take layout bbox
@@ -280,7 +281,7 @@ class Layer {
 /**
  *  render the 
  */
-	draw(transform, viewport) {
+	draw(camera) {
 		//exception for layout image where we still do not know the image size
 		//how linear or srgb should be specified here.
 //		gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
@@ -294,11 +295,11 @@ class Layer {
 		this.prepareWebGL();
 
 //		find which quads to draw and in case request for them
-		transform = this.transform.compose(transform);
-		let needed = this.layout.neededBox(viewport, transform, 0, this.mipmapBias);
+		//transform = this.transform.compose(transform);
+		let needed = this.layout.neededBox(camera, this.transform, 0, this.mipmapBias);
 		let torender = this.toRender(needed);
 
-		let matrix = transform.projectionMatrix(viewport);
+		let matrix = camera.getMatrix(this.transform); //transform.projectionMatrix(viewport);
 		this.gl.uniformMatrix4fv(this.shader.matrixlocation, this.gl.FALSE, matrix);
 
 		for(let index in torender) {
@@ -458,10 +459,10 @@ class Layer {
 *  @param {object] transform is the canvas coordinate transformation
 *  @param {viewport} is the viewport for the rendering, note: for lens might be different! Where we change it? here layer should know!
 */
-	prefetch(transform, viewport) {
+	prefetch(camera) {
 		if(this.layers.length != 0) { //combine layers
 			for(let layer of this.layers)
-				layer.prefetch(transform, viewport);
+				layer.prefetch(camera);
 		}
 
 		if(this.rasters.length == 0)
@@ -473,7 +474,7 @@ class Layer {
 		if(typeof(this.layout) != 'object')
 			throw "AH!";
 
-		let needed = this.layout.neededBox(viewport, transform, this.prefetchBorder, this.mipmapBias);
+		let needed = this.layout.neededBox(camera, this.transform, this.prefetchBorder, this.mipmapBias);
 		if(this.previouslyNeeded && this.sameNeeded(this.previouslyNeeded, needed))
 				return;
 		this.previouslyNeeded = needed;
@@ -522,7 +523,6 @@ class Layer {
 			}
 			let blob = await response.blob();
 			
-			console.log(this.shader.samplers.length);
 			let i = 0;
 			for(let sampler of this.shader.samplers) {
 				let raster = this.rasters[sampler.id];

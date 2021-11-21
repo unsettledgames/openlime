@@ -24,8 +24,7 @@ class Canvas {
 			camera: camera,
 			layers: {},
 			signals: {'update':[], 'updateSize':[]}
-		});
-		Object.assign(this, options);
+		}, options);
 
 		this.init(canvas);
 			
@@ -138,9 +137,9 @@ class Canvas {
 		gl.enable(gl.BLEND);
 
 		//TODO: getCurren shoudl redurn {position, done}
-		let pos = this.camera.getCurrentTransform(time);
+		//let pos = this.camera.getCurrentTransform(time);
 		//todo we could actually prefetch toward the future a little bit
-		this.prefetch(pos);
+		this.prefetch();
 
 		//pos layers using zindex.
 		let ordered = Object.values(this.layers).sort( (a, b) => a.zindex - b.zindex);
@@ -149,25 +148,25 @@ class Canvas {
 		let done = true;
 		for(let layer of ordered)
 			if(layer.visible)
-				done = layer.draw(pos, view) && done;
+				done = layer.draw(this.camera) && done;
 
 		//TODO not really an elegant solution to tell if we have reached the target, the check should be in getCurrentTransform.
-		return done && pos.t >= this.camera.target.t;
+		return done && this.camera.animating == false //pos.t >= this.camera.target.t;
 	}
 
 /**
  * This function have each layer to check which tiles are needed and schedule them for download.
  * @param {object} transform is the camera position (layer will combine with local transform).
  */
-	prefetch(transform) {
-		if(!transform)
-			transform = this.camera.getCurrentTransform(performance.now());
+	prefetch() {
+		//if(!transform)
+	//		transform = this.camera.getCurrentTransform(performance.now());
 		for(let id in this.layers) {
 			let layer = this.layers[id];
 			//console.log(layer);
 			//console.log(layer.layout.status);
 			if(layer.visible && layer.status == 'ready') {
-				layer.prefetch(transform, this.camera.viewport);
+				layer.prefetch(this.camera);
 			}
 		}
 	}

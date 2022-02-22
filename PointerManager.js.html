@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>OpenLIME Source: PointerManager.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.cerulean.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">OpenLIME</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Annotation.html">Annotation</a></li><li><a href="AnnotationLayer.html">AnnotationLayer</a></li><li><a href="BRDFLayer.html">BRDFLayer</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="CombinerLayer.html">CombinerLayer</a></li><li><a href="Controller.html">Controller</a></li><li><a href="ImageLayer.html">ImageLayer</a></li><li><a href="Layer.html">Layer</a></li><li><a href="Layout.html">Layout</a></li><li><a href="LensLayer.html">LensLayer</a></li><li><a href="OpenLIME.html">OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="RTILayer.html">RTILayer</a></li><li><a href="RTIShader.html">RTIShader</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="SvgAnnotationLayer.html">SvgAnnotationLayer</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Howto<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="tutorial-getting-started.html">Getting started with OpenLIME</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-12">
+	
+		<div id="main">
+			
+
+		<h1 class="page-title">Source: PointerManager.js</h1>
+    
+<section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">/**
+ * Manages handles simultaneous events from a target. 
+ * how do I write more substantial documentation.
+ *
+ * @param {div} target is the DOM element from which the events are generated
+ * @param {object} options is a JSON describing the options
+ *  * **diagonal**: default *27*, the screen diagonal in inch
+ */
+class PointerManager {
+    constructor(target, options) {
+
+        this.target = target;
+
+        Object.assign(this, {
+            diagonal: 27,                // Standard monitor 27"
+            pinchMaxInterval: 200        // in ms, fingerDown event max distance in time to trigger a pinch.
+        });
+
+        if (options)
+            Object.assign(this, options);
+
+        this.currentPointers = [];
+        this.eventObservers = new Map();
+        this.ppmm = PointerManager.getPPMM(this.diagonal);
+
+        this.target.style.touchAction = "none";
+        this.target.addEventListener('pointerdown', (e) => this.handleEvent(e), false);
+        this.target.addEventListener('pointermove', (e) => this.handleEvent(e), false);
+        this.target.addEventListener('pointerup', (e) => this.handleEvent(e), false);
+        this.target.addEventListener('pointercancel', (e) => this.handleEvent(e), false);
+        this.target.addEventListener('wheel', (e) => this.handleEvent(e), false);
+    }
+
+    ///////////////////////////////////////////////////////////
+    /// Constants
+    static get ANYPOINTER() { return -1; }
+
+    ///////////////////////////////////////////////////////////
+    /// Utilities
+
+    static splitStr(str) {
+        return str.trim().split(/\s+/g);
+    }
+
+    static getPPMM(diagonal) {
+        // sqrt(w^2 + h^2) / diagonal / 1in
+        return Math.round(Math.sqrt(screen.width **2  + screen.height **2) / diagonal / 25.4);
+    }
+
+    ///////////////////////////////////////////////////////////
+    /// Class interface
+
+    // register pointer handlers.
+    on(eventTypes, obj, idx = PointerManager.ANYPOINTER) {
+        eventTypes = PointerManager.splitStr(eventTypes);
+
+        if (typeof (obj) == 'function') {
+            obj = Object.fromEntries(eventTypes.map(e => [e, obj]));
+            obj.priority = -1000;
+        }
+
+        eventTypes.forEach(eventType => {
+            if (idx == PointerManager.ANYPOINTER) {
+                this.broadcastOn(eventType, obj);
+            } else {
+                const p = this.currentPointers[idx];
+                if (!p) {
+                    throw new Error("Bad Index");
+                }
+                p.on(eventType, obj);
+            }
+        });
+        return obj;
+    }
+
+    // unregister pointer handlers
+    off(eventTypes, callback, idx = PointerManager.ANYPOINTER) {
+        if (idx == PointerManager.ANYPOINTER) {
+            this.broadcastOff(eventTypes, callback);
+        } else {
+            PointerManager.splitStr(eventTypes).forEach(eventType => {
+                const p = this.currentPointers[idx];
+                if (!p) {
+                    throw new Error("Bad Index");
+                }
+                p.off(eventType, callback);
+            });
+        }
+    }
+
+    onEvent(handler) {
+        const cb_properties = ['fingerHover', 'fingerSingleTap', 'fingerDoubleTap', 'fingerHold', 'mouseWheel'];
+        if (!handler.hasOwnProperty('priority'))
+            throw new Error("Event handler has not priority property");
+
+        if (!cb_properties.some((e) => typeof (handler[e]) == 'function'))
+            throw new Error("Event handler properties are wrong or missing");
+
+        for (let e of cb_properties)
+            if (typeof (handler[e]) == 'function') {
+                this.on(e, handler);
+            }
+        if(handler.panStart)
+            this.onPan(handler);
+        if(handler.pinchStart)
+            this.onPinch(handler);
+    }
+
+    onPan(handler) {
+        const cb_properties = ['panStart', 'panMove', 'panEnd'];
+        if (!handler.hasOwnProperty('priority'))
+            throw new Error("Event handler has not priority property");
+
+        if (!cb_properties.every((e) => typeof (handler[e]) == 'function'))
+            throw new Error("Pan handler is missing one of this functions: panStart, panMove or panEnd");
+
+        handler.fingerMovingStart = (e) => {
+            handler.panStart(e);
+            if (!e.defaultPrevented) return;
+             this.on('fingerMoving', (e1) => {
+                handler.panMove(e1);
+            }, e.idx);
+            this.on('fingerMovingEnd', (e2) => {
+                handler.panEnd(e2);
+            }, e.idx);
+        }
+        this.on('fingerMovingStart', handler);
+    }
+
+    onPinch(handler) {
+        const cb_properties = ['pinchStart', 'pinchMove', 'pinchEnd'];
+        if (!handler.hasOwnProperty('priority'))
+            throw new Error("Event handler has not priority property");
+
+        if (!cb_properties.every((e) => typeof (handler[e]) == 'function'))
+            throw new Error("Pinch handler is missing one of this functions: pinchStart, pinchMove or pinchEnd");
+
+        handler.fingerDown = (e1) => {
+            //find other pointers not in moving status
+            const filtered = this.currentPointers.filter(cp => cp &amp;&amp; cp.idx != e1.idx &amp;&amp; cp.status == cp.stateEnum.DETECT);
+            if (filtered.length == 0) return;
+
+            //for each pointer search for the last fingerDown event.
+            const fingerDownEvents = [];
+            for (let cp of filtered) {
+                let down = null;
+                for (let e of cp.eventHistory.toArray())
+                    if (e.fingerType == 'fingerDown')
+                        down = e;
+                if (down)
+                    fingerDownEvents.push(down);
+            }
+            //we start from the closest one
+            //TODO maybe we should sort by distance instead.
+            fingerDownEvents.sort((a, b) => b.timeStamp - a.timeStamp);
+            for (let e2 of fingerDownEvents) {
+                if (e1.timeStamp - e2.timeStamp > this.pinchInterval) break; 
+
+                handler.pinchStart(e1, e2);
+                if (!e1.defaultPrevented) break;
+
+                clearTimeout(this.currentPointers[e1.idx].timeout);
+                clearTimeout(this.currentPointers[e2.idx].timeout);
+
+                this.on('fingerMovingStart', (e) => e.preventDefault(), e1.idx); //we need to capture this event (pan conflict)
+                this.on('fingerMovingStart', (e) => e.preventDefault(), e2.idx);
+                this.on('fingerMoving',      (e) => e2 &amp;&amp; handler.pinchMove(e1 = e, e2), e1.idx); //we need to assign e1 and e2, to keep last position.
+                this.on('fingerMoving',      (e) => e1 &amp;&amp; handler.pinchMove(e1, e2 = e), e2.idx);
+
+                this.on('fingerMovingEnd', (e) => {
+                    if (e2)
+                        handler.pinchEnd(e, e2);
+                    e1 = e2 = null;
+                }, e1.idx);
+                this.on('fingerMovingEnd', (e) => {
+                    if (e1)
+                        handler.pinchEnd(e1, e);
+                    e1 = e2 = null;
+                }, e2.idx);
+
+                break;
+            }
+        }
+        this.on('fingerDown', handler);
+    }
+    ///////////////////////////////////////////////////////////
+    /// Implementation stuff
+
+    // register broadcast handlers
+    broadcastOn(eventType, obj) {
+        const handlers = this.eventObservers.get(eventType);
+        if (handlers)
+            handlers.push(obj);
+        else
+            this.eventObservers.set(eventType, [obj]);
+    }
+
+    // unregister broadcast handlers
+    broadcastOff(eventTypes, obj) {
+        PointerManager.splitStr(eventTypes).forEach(eventType => {
+            if (this.eventObservers.has(eventType)) {
+                if (!obj) {
+                    this.eventObservers.delete(eventType);
+                } else {
+                    const handlers = this.eventObservers.get(eventType);
+                    const index = handlers.indexOf(obj);
+                    if (index > -1) {
+                        handlers.splice(index, 1);
+                    }
+                    if (handlers.length == 0) {
+                        this.eventObservers.delete(eventType);
+                    }
+                }
+            }
+        });
+    }
+
+    // emit broadcast events
+    broadcast(e) {
+        if (!this.eventObservers.has(e.fingerType)) return;
+        this.eventObservers.get(e.fingerType)
+            .sort((a, b) => b.priority - a.priority)
+            .every(obj => {
+                obj[e.fingerType](e);
+                return !e.defaultPrevented;
+            });  // the first obj returning a defaultPrevented event breaks the every loop
+    }
+
+    addCurrPointer(cp) {
+        let result = -1;
+        for (let i = 0; i &lt; this.currentPointers.length &amp;&amp; result &lt; 0; i++) {
+            if (this.currentPointers[i] == null) {
+                result = i;
+            }
+        }
+        if (result &lt; 0) {
+            this.currentPointers.push(cp);
+            result = this.currentPointers.length - 1;
+        } else {
+            this.currentPointers[result] = cp;
+        }
+
+        return result;
+    }
+
+    removeCurrPointer(index) {
+        this.currentPointers[index] = null;
+        while ((this.currentPointers.length > 0) &amp;&amp; (this.currentPointers[this.currentPointers.length - 1] == null)) {
+            this.currentPointers.pop();
+        }
+    }
+
+    handleEvent(e) {
+        if (e.type == 'pointerdown') this.target.setPointerCapture(e.pointerId);
+        if (e.type == 'pointercancel') console.log(e);
+
+        let handled = false;
+        for (let i = 0; i &lt; this.currentPointers.length &amp;&amp; !handled; i++) {
+            const cp = this.currentPointers[i];
+            if (cp) {
+                handled = cp.handleEvent(e);
+                if (cp.isDone())
+                    this.removeCurrPointer(i);
+            }
+        }
+        if (!handled) {
+            const cp = new SinglePointerHandler(this, e.pointerId, { ppmm: this.ppmm });
+            handled = cp.handleEvent(e);
+        }
+        //e.preventDefault();
+    }
+
+}
+
+
+class SinglePointerHandler {
+    constructor(parent, pointerId, options) {
+
+        this.parent = parent;
+        this.pointerId = pointerId;
+
+        Object.assign(this, {
+            ppmm: 3, // 27in screen 1920x1080 = 3 ppmm
+        });
+        if (options)
+            Object.assign(this, options);
+
+        this.eventHistory = new CircularBuffer(10);
+        this.isActive = false;
+        this.startTap = 0;
+        this.threshold = 15; // 15mm
+
+        this.eventObservers = new Map();
+        this.isDown = false;
+        this.done = false;
+
+        this.stateEnum = {
+            IDLE: 0,
+            DETECT: 1,
+            HOVER: 2,
+            MOVING_START: 3,
+            MOVING: 4,
+            MOVING_END: 5,
+            HOLD: 6,
+            TAPS_DETECT: 7,
+            SINGLE_TAP: 8,
+            DOUBLE_TAP_DETECT: 9,
+            DOUBLE_TAP: 10,
+        };
+        this.status = this.stateEnum.IDLE;
+        this.timeout = null;
+        this.holdTimeoutThreshold = 600;
+        this.tapTimeoutThreshold = 100;
+        this.oldDownPos = { clientX: 0, clientY: 0 };
+        this.movingThreshold = 1; // 1mm
+        this.idx = this.parent.addCurrPointer(this);
+    }
+
+    ///////////////////////////////////////////////////////////
+    /// Utilities
+
+    static distance(x0, y0, x1, y1) {
+        return Math.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2);
+    }
+
+    distanceMM(x0, y0, x1, y1) {
+        return SinglePointerHandler.distance(x0, y0, x1, y1) / this.ppmm;
+    }
+
+    ///////////////////////////////////////////////////////////
+    /// Class interface
+
+    on(eventType, obj) {
+        this.eventObservers.set(eventType, obj);
+    }
+
+    off(eventType) {
+        if (this.eventObservers.has(eventType)) {
+            this.eventObservers.delete(eventType);
+        }
+    }
+
+    ///////////////////////////////////////////////////////////
+    /// Implementation stuff
+
+    addToHistory(e) {
+        this.eventHistory.push(e);
+    }
+
+    prevPointerEvent() {
+        return this.eventHistory.last();
+    }
+
+    handlePointerDown(e) {
+        this.startTap = e.timeStamp;
+    }
+
+    handlePointerUp(e) {
+        const tapDuration = e.timeStamp - this.startTap;
+    }
+
+    isLikelySamePointer(e) {
+        let result = this.pointerId == e.pointerId;
+        if (!result &amp;&amp; !this.isDown &amp;&amp; e.type == "pointerdown") {
+            const prevP = this.prevPointerEvent();
+            if (prevP) {
+                result = (e.pointerType == prevP.pointerType) &amp;&amp; this.distanceMM(e.clientX, e.clientY, prevP.clientX, prevP.clientY) &lt; this.threshold;
+            }
+        }
+        return result;
+    }
+
+    // emit+broadcast
+    emit(e) {
+        if (this.eventObservers.has(e.fingerType)) {
+            this.eventObservers.get(e.fingerType)[e.fingerType](e);
+            if (e.defaultPrevented) return;
+        }
+        this.parent.broadcast(e);
+    }
+
+    // output Event, speed is computed only on pointermove
+    createOutputEvent(e, type) {
+        const result = e;
+        result.fingerType = type;
+        result.originSrc = this.originSrc;
+        result.speedX = 0;
+        result.speedY = 0;
+        result.idx = this.idx;
+        const prevP = this.prevPointerEvent();
+        if (prevP &amp;&amp; (e.type == 'pointermove')) {
+            const dt = result.timeStamp - prevP.timeStamp;
+            if (dt > 0) {
+                result.speedX = (result.clientX - prevP.clientX) / dt * 1000.0;  // px/s
+                result.speedY = (result.clientY - prevP.clientY) / dt * 1000.0;  // px/s
+            }
+        }
+        return result;
+    }
+
+    // Finite State Machine
+    processEvent(e) {
+        let distance = 0;
+        if (e.type == "pointerdown") {
+            this.oldDownPos.clientX = e.clientX;
+            this.oldDownPos.clientY = e.clientY;
+            this.isDown = true;
+        }
+        if (e.type == "pointerup" || e.type == "pointercancel") this.isDown = false;
+        if (e.type == "pointermove" &amp;&amp; this.isDown) {
+            distance = this.distanceMM(e.clientX, e.clientY, this.oldDownPos.clientX, this.oldDownPos.clientY)
+        }
+
+        if (e.type == "wheel") {
+            this.emit(this.createOutputEvent(e, 'mouseWheel'));
+            return;
+        }
+
+        switch (this.status) {
+            case this.stateEnum.HOVER:
+            case this.stateEnum.IDLE:
+                if (e.type == 'pointermove') {
+                    this.emit(this.createOutputEvent(e, 'fingerHover'));
+                    this.status = this.stateEnum.HOVER;
+                    this.originSrc = e.composedPath()[0];
+                } else if (e.type == 'pointerdown') {
+                    this.status = this.stateEnum.DETECT;
+                    this.emit(this.createOutputEvent(e, 'fingerDown'));
+                    if (e.defaultPrevented) { // An observer captured the fingerDown event
+                        this.status = this.stateEnum.MOVING;
+                        break;
+                    }
+                    this.originSrc = e.composedPath()[0];
+                    this.timeout = setTimeout(() => {
+                        this.emit(this.createOutputEvent(e, 'fingerHold'));
+                        if(e.defaultPrevented) this.status = this.stateEnum.IDLE;
+                    }, this.holdTimeoutThreshold);
+                }
+                break;
+            case this.stateEnum.DETECT:
+                if (e.type == 'pointercancel') { /// For Firefox
+                    clearTimeout(this.timeout);
+                    this.status = this.stateEnum.IDLE;
+                    this.emit(this.createOutputEvent(e, 'fingerHold'));
+                } else if (e.type == 'pointermove' &amp;&amp; distance > this.movingThreshold) {
+                    clearTimeout(this.timeout);
+                    this.status = this.stateEnum.MOVING;
+                    this.emit(this.createOutputEvent(e, 'fingerMovingStart'));
+                } else if (e.type == 'pointerup') {
+                    clearTimeout(this.timeout);
+                    this.status = this.stateEnum.TAPS_DETECT;
+                    this.timeout = setTimeout(() => {
+                        this.status = this.stateEnum.IDLE;
+                        this.emit(this.createOutputEvent(e, 'fingerSingleTap'));
+                    }, this.tapTimeoutThreshold);
+                }
+                break;
+            case this.stateEnum.TAPS_DETECT:
+                if (e.type == 'pointerdown') {
+                    clearTimeout(this.timeout);
+                    this.status = this.stateEnum.DOUBLE_TAP_DETECT;
+                    this.timeout = setTimeout(() => {
+                        this.emit(this.createOutputEvent(e, 'fingerHold'));
+                        if(e.defaultPrevented) this.status = this.stateEnum.IDLE;
+                    }, this.tapTimeoutThreshold);
+                } else if (e.type == 'pointermove' &amp;&amp; distance > this.movingThreshold) {
+                    clearTimeout(this.timeout);
+                    this.status = this.stateEnum.IDLE;
+                    this.emit(this.createOutputEvent(e, 'fingerHover'));
+                }
+                break;
+            case this.stateEnum.DOUBLE_TAP_DETECT:
+                if (e.type == 'pointerup' || e.type == 'pointercancel') {
+                    clearTimeout(this.timeout);
+                    this.status = this.stateEnum.IDLE;
+                    this.emit(this.createOutputEvent(e, 'fingerDoubleTap'));
+                }
+                break;
+            case this.stateEnum.DOUBLE_TAP_DETECT:
+                if (e.type == 'pointermove' &amp;&amp; distance > this.movingThreshold) {
+                    this.status = this.stateEnum.MOVING;
+                    this.emit(this.createOutputEvent(e, 'fingerMovingStart'));
+                }
+                break;
+            case this.stateEnum.MOVING:
+                if (e.type == 'pointermove') {
+                    // Remain MOVING
+                    this.emit(this.createOutputEvent(e, 'fingerMoving'));
+                } else if (e.type == 'pointerup' || e.type == 'pointercancel') {
+                    this.status = this.stateEnum.IDLE;
+                    this.emit(this.createOutputEvent(e, 'fingerMovingEnd'));
+                }
+                break;
+            default:
+                console.log("ERROR " + this.status);
+                console.log(e);
+                break;
+        }
+
+        this.addToHistory(e);
+    }
+
+    handleEvent(e) {
+        let result = false;
+        if (this.isLikelySamePointer(e)) {
+            this.pointerId = e.pointerId; //it's mine
+            this.processEvent(e);
+            result = true;
+        }
+        return result;
+    }
+
+    isDone() {
+        return this.status == this.stateEnum.IDLE;
+    }
+
+}
+
+
+class CircularBuffer {
+    constructor(capacity) {
+        if (typeof capacity != "number" || !Number.isInteger(capacity) || capacity &lt; 1)
+            throw new TypeError("Invalid capacity");
+        this.buffer = new Array(capacity);
+        this.capacity = capacity;
+        this.first = 0;
+        this.size = 0;
+    }
+
+    clear() {
+        this.first = 0;
+        this.size = 0;
+    }
+
+    empty() {
+        return this.size == 0;
+    }
+
+    size() {
+        return this.size;
+    }
+
+    capacity() {
+        return this.capacity;
+    }
+
+    first() {
+        let result = null;
+        if (this.size > 0) result = this.buffer[this.first];
+        return result;
+    }
+
+    last() {
+        let result = null;
+        if (this.size > 0) result = this.buffer[(this.first + this.size - 1) % this.capacity];
+        return result;
+    }
+
+    enqueue(v) {
+        this.first = (this.first > 0) ? this.first - 1 : this.first = this.capacity - 1;
+        this.buffer[this.first] = v;
+        if (this.size &lt; this.capacity) this.size++;
+    }
+
+    push(v) {
+        if (this.size == this.capacity) {
+            this.buffer[this.first] = v;
+            this.first = (this.first + 1) % this.capacity;
+        } else {
+            this.buffer[(this.first + this.size) % this.capacity] = v;
+            this.size++;
+        }
+    }
+
+    dequeue() {
+        if (this.size == 0) throw new RangeError("Dequeue on empty buffer");
+        const v = this.buffer[(this.first + this.size - 1) % this.capacity];
+        this.size--;
+        return v;
+    }
+
+    pop() {
+        return this.dequeue();
+    }
+
+    shift() {
+        if (this.size == 0) throw new RangeError("Shift on empty buffer");
+        const v = this.buffer[this.first];
+        if (this.first == this.capacity - 1) this.first = 0; else this.first++;
+        this.size--;
+        return v;
+    }
+
+    get(start, end) {
+        if (this.size == 0 &amp;&amp; start == 0 &amp;&amp; (end == undefined || end == 0)) return [];
+        if (typeof start != "number" || !Number.isInteger(start) || start &lt; 0) throw new TypeError("Invalid start value");
+        if (start >= this.size) throw new RangeError("Start index past end of buffer: " + start);
+
+        if (end == undefined) return this.buffer[(this.first + start) % this.capacity];
+
+        if (typeof end != "number" || !Number.isInteger(end) || end &lt; 0) throw new TypeError("Invalid end value");
+        if (end >= this.size) throw new RangeError("End index past end of buffer: " + end);
+
+        if (this.first + start >= this.capacity) {
+            start -= this.capacity;
+            end -= this.capacity;
+        }
+        if (this.first + end &lt; this.capacity)
+            return this.buffer.slice(this.first + start, this.first + end + 1);
+        else
+            return this.buffer.slice(this.first + start, this.capacity).concat(this.buffer.slice(0, this.first + end + 1 - this.capacity));
+    }
+
+    toArray() {
+        if (this.size == 0) return [];
+        return this.get(0, this.size - 1);
+    }
+
+}
+
+
+
+
+export { PointerManager }</pre>
+    </article>
+</section>
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+	<div class='jsdoc-message'>ISTI - CNR & CRS4 - ViC</div>
+
+
+	<span class="copyright">
+	DocStrap Copyright © 2012-2015 The contributors to the JSDoc3 and DocStrap projects.
+	</span>
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
+	
+		on Tue Feb 22nd 2022
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>OpenLIME Source: AnnotationLayer.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.cerulean.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">OpenLIME</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Annotation.html">Annotation</a></li><li><a href="AnnotationLayer.html">AnnotationLayer</a></li><li><a href="BRDFLayer.html">BRDFLayer</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="CombinerLayer.html">CombinerLayer</a></li><li><a href="Controller.html">Controller</a></li><li><a href="ImageLayer.html">ImageLayer</a></li><li><a href="Layer.html">Layer</a></li><li><a href="Layout.html">Layout</a></li><li><a href="LensLayer.html">LensLayer</a></li><li><a href="OpenLIME.html">OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="RTILayer.html">RTILayer</a></li><li><a href="RTIShader.html">RTIShader</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="SvgAnnotationLayer.html">SvgAnnotationLayer</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Howto<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="tutorial-getting-started.html">Getting started with OpenLIME</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-12">
+	
+		<div id="main">
+			
+
+		<h1 class="page-title">Source: AnnotationLayer.js</h1>
+    
+<section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">import { Annotation } from './Annotation.js';
+import { BoundingBox } from './BoundingBox.js';
+import { Layer } from './Layer.js'
+
+/**
+ * SVG or OpenGL polygons/lines/points annotation layer
+ * @param {object} options
+ * * *svgURL*: url for the svg containing the annotations
+ * * *svgXML*: svg string containing the annotatiosn
+ * * *geometry*: TODO: should contain the areas/lines/points for OpenGL rendering
+ * * *style*: css style for the annotation elements (shadow dom allows css to apply only to this layer)
+ * * *annotations*: collection of annotations info: each annotations is id: { label, svg (optional), data (custom data) (TODO)
+ */
+
+
+class AnnotationLayer extends Layer {
+	constructor(options) {
+		options = Object.assign({
+			// geometry: null,  //unused, might want to store here the quads/shapes for opengl rendering
+			style: null,    //straightforward for svg annotations, to be defined oro opengl rendering
+			annotations: [],
+			hoverable: false, //display info about annotation on mousehover.
+			selected: new Set,
+			annotationsListEntry: null, //TODO: horrible name for the interface list of annotations
+		}, options);
+		super(options);
+
+		this.signals.selected = [];
+
+		if (typeof (this.annotations) == "string") { //assumes it is an URL
+			(async () => { await this.loadAnnotations(this.annotations); })();
+		}
+	}
+
+	async loadAnnotations(url) {
+		var response = await fetch(url);
+		if(!response.ok) {
+			this.status = "Failed loading " + this.url + ": " + response.statusText;
+			return;
+		}
+		this.annotations = await response.json();
+		if(this.annotations.status == 'error') {
+			alert("Failed to load annotations: " + this.annotations.msg);
+			return;
+		}
+		//this.annotations = this.annotations.map(a => '@context' in a ? Annotation.fromJsonLd(a): a);
+		this.annotations = this.annotations.map(a => new Annotation(a));
+		for(let a of this.annotations)
+			if(a.publish != 1)
+				a.visible = false;
+		this.annotations.sort((a, b) => a.label.localeCompare(b.label));
+		if(this.annotationsListEntry)
+			this.createAnnotationsList();
+		
+		this.emit('update');
+		this.emit('ready');
+	}
+
+
+	newAnnotation(annotation, selected = true) {
+		if(!annotation)
+			annotation = new Annotation();
+
+		this.annotations.push(annotation);
+		let html = this.createAnnotationEntry(annotation);
+		let template = document.createElement('template');
+		template.innerHTML = html.trim();
+		
+		let list =  this.annotationsListEntry.element.parentElement.querySelector('.openlime-list');
+		list.appendChild(template.content.firstChild);
+		
+		this.clearSelected();
+		this.setSelected(annotation);
+
+		return annotation;
+	}
+
+
+	annotationsEntry() {
+		return this.annotationsListEntry =  {
+			html: '',
+			list: [], //will be filled later.
+			classes: 'openlime-annotations',
+			status: () => 'active',
+			oncreate: () => { 
+				if(Array.isArray(this.annotations))
+					this.createAnnotationsList();
+			}
+		}
+	}
+
+	createAnnotationsList() {
+		let html ='';
+		for(let a of this.annotations) {
+			html += this.createAnnotationEntry(a);
+		}
+
+		let list =  this.annotationsListEntry.element.parentElement.querySelector('.openlime-list');
+		list.innerHTML = html;
+		list.addEventListener('click', (e) =>  { 
+			let svg = e.srcElement.closest('svg');
+			if(svg) {
+				let entry = svg.closest('[data-annotation]')
+				entry.classList.toggle('hidden');
+				let id = entry.getAttribute('data-annotation');
+				let anno = this.getAnnotationById(id);
+				anno.visible = !anno.visible;
+				anno.needsUpdate = true;
+				this.emit('update');
+			}
+
+			let id = e.srcElement.getAttribute('data-annotation');
+			if(id) {
+				this.clearSelected();
+				let anno = this.getAnnotationById(id);
+				this.setSelected(anno, true);
+			}
+		});
+	}
+
+	createAnnotationEntry(a) {
+		return `&lt;a href="#" data-annotation="${a.id}" class="openlime-entry ${a.visible == 0? 'hidden':''}">${a.label || ''}
+			&lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="openlime-eye">&lt;path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z">&lt;/path>&lt;circle cx="12" cy="12" r="3">&lt;/circle>&lt;/svg>
+			&lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="openlime-eye-off">&lt;path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">&lt;/path>&lt;line x1="1" y1="1" x2="23" y2="23">&lt;/line>&lt;/svg>
+			&lt;/a>`;
+	}
+
+	getAnnotationById(id) {
+		for(const anno of this.annotations)
+			if(anno.id == id)
+				return anno;
+		return null;
+	}
+
+	clearSelected() {
+		this.annotationsListEntry.element.parentElement.querySelectorAll(`[data-annotation]`).forEach((e) => e.classList.remove('selected'));
+		this.selected.clear();
+	}
+	//set selected class for annotation
+	setSelected(anno, on = true) {
+		this.annotationsListEntry.element.parentElement.querySelector(`[data-annotation="${anno.id}"]`).classList.toggle('selected', on);
+		if(on)
+			this.selected.add(anno.id);
+		else
+			this.selected.delete(anno.id);
+		this.emit('selected', anno);
+	}
+}
+
+export { AnnotationLayer }
+</pre>
+    </article>
+</section>
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+	<div class='jsdoc-message'>ISTI - CNR & CRS4 - ViC</div>
+
+
+	<span class="copyright">
+	DocStrap Copyright © 2012-2015 The contributors to the JSDoc3 and DocStrap projects.
+	</span>
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
+	
+		on Tue Feb 22nd 2022
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>

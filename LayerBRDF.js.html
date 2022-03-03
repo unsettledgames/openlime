@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Class: ImageLayer</title>
+	<title>OpenLIME Source: LayerBRDF.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -33,7 +33,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Annotation.html">Annotation</a></li><li><a href="AnnotationLayer.html">AnnotationLayer</a></li><li><a href="BRDFLayer.html">BRDFLayer</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="CombinerLayer.html">CombinerLayer</a></li><li><a href="Controller.html">Controller</a></li><li><a href="ImageLayer.html">ImageLayer</a></li><li><a href="Layer.html">Layer</a></li><li><a href="Layout.html">Layout</a></li><li><a href="LensLayer.html">LensLayer</a></li><li><a href="OpenLIME.html">OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="RTILayer.html">RTILayer</a></li><li><a href="RTIShader.html">RTIShader</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="SvgAnnotationLayer.html">SvgAnnotationLayer</a></li>
+					<li><a href="Annotation.html">Annotation</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="OpenLIME.html">OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li>
 				</ul>
 			</li>
 			
@@ -67,185 +67,130 @@
 <div class="row">
 
 	
-	<div class="col-md-8">
+	<div class="col-md-12">
 	
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: ImageLayer</h1>
+		<h1 class="page-title">Source: LayerBRDF.js</h1>
+    
 <section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">import { Layer }  from './Layer.js'
+import { Raster } from './Raster.js'
+import { ShaderBRDF } from './ShaderBRDF.js'
+import { Shader } from './Shader.js'
+import { Layout } from './Layout.js'
 
-<header>
-    
-        <h2>
-        ImageLayer
-        </h2>
-        
-            <div class="class-description"><p>Display a simple image. Extends <a href="Layer.html">Layer</a>.</p></div>
-        
-    
-</header>
+/**
+ * Extends {@link Layer}.
+ * @param {options} options Same as {@link Layer}, but channels(ks,kd,normals,gloss) are required.
+ */
 
+class LayerBRDF extends Layer {
+	constructor(options) {
+		super(options);
 
-<article>
-    <div class="container-overview">
-    
-        
-<hr>
-<dt>
-    <h4 class="name" id="ImageLayer"><span class="type-signature"></span>new ImageLayer(options)</h4>
-    
-    
-</dt>
-<dd>
+		if(Object.keys(this.rasters).length != 0)
+			throw "Rasters options should be empty!";
 
-    
+		if(!this.channels)
+			throw "channels option is required";
 
-    
+		if(!this.channels.kd || !this.channels.normals)
+			throw "kd and normals channels are required";
+	
+		if(!this.colorspaces) {
+			console.log("LayerBRDF: missing colorspaces: force both to linear");
+			this.colorspaces['kd'] = 'linear';
+			this.colorspaces['ks'] = 'linear';
+		}
 
-    
+		let id = 0;
+		let urls = [];
+		let samplers = [];
+		for (let c in this.channels) {
+			let url = this.channels[c];
+			switch (c) {
+				case 'kd':
+					this.rasters.push(new Raster({ type: 'vec3', attribute: 'kd', colorspace: this.colorspaces['kd'] }));
+					samplers.push({ 'id': id, 'name': 'uTexKd' });
+					break;
+				case 'ks':
+					this.rasters.push(new Raster({ type: 'vec3',  attribute: 'ks',      colorspace: this.colorspaces['ks'] }));
+					samplers.push({ 'id': id, 'name': 'uTexKs' });
+					break;
+				case 'normals':
+					this.rasters.push(new Raster({ type: 'vec3',  attribute: 'normals', colorspace: 'linear' }));
+					samplers.push({ 'id': id, 'name': 'uTexNormals' });
+					break;
+				case 'gloss':
+					this.rasters.push(new Raster({ type: 'float', attribute: 'gloss',   colorspace: 'linear' }));
+					samplers.push({ 'id': id, 'name': 'uTexGloss' });
+					break;
 
-    
-    
-        <h5>Parameters:</h5>
-        
+				default:
+					break;
+			}
+			urls[id] = url;
+			id++;
+		}
+		this.layout.setUrls(urls);
+		
+		let now = performance.now();
+		this.controls['light'] = { source:{ value: [0, 0], t: now }, target:{ value:[0, 0], t:now }, current:{ value:[0, 0], t:now } };
 
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
+		let shader = new ShaderBRDF({
+			'label': 'Rgb',
+			'samplers': samplers,
+			'colorspaces': this.colorspaces
+		});
 
-        <th>Type</th>
+		this.shaders['brdf'] = shader;
+		this.setShader('brdf');
+	}
 
-        
+	setLight(light, dt) {
+		let r2 =  light[0]*light[0] + light[1]*light[1];
+		if (r2 > 1.0) {
+			let r = Math.sqrt(r2);
+			light[0] /= r;
+			light[1] /= r;
+			r2 = 1.0;
+		}
+		light[2] = Math.sqrt(1-r2);
+		this.setControl('light', light, dt);
+	}
 
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">options</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Same as <a href="Layer.html">Layer</a>, but url and layout are required.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
+	interpolateControls() {
+		let done = super.interpolateControls();
+		if(!done) {
+			let light = this.controls['light'].current.value;
+			let r2 =  light[0]*light[0] + light[1]*light[1];
+			if (r2 > 1.0) {
+				light[0] /= r2;
+				light[1] /= r2;
+				r2 = 1.0;
+			}
+			light[2] = Math.sqrt(1-r2);
 	
 
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
+			//let z = Math.sqrt(1 - light[0]*light[0] - light[1]*light[1]);
+			this.shader.setLight([light[0], light[1], light[2], 0]);
+		}
+		return done;
+	}
+}
 
 
+Layer.prototype.types['brdf'] = (options) => { return new LayerBRDF(options); }
 
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="ImageLayer.js.html">ImageLayer.js</a>,
-				 <a href="ImageLayer.js.html#sunlight-1-line-11">line 11</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
+export { LayerBRDF }
+</pre>
+    </article>
 </section>
+
 
 
 
@@ -255,10 +200,6 @@
 
 	<div class="clearfix"></div>
 
-	
-		<div class="col-md-3">
-			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
-		</div>
 	
 
 </div>
@@ -293,7 +234,7 @@
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
 	
-		on Mon Feb 28th 2022
+		on Thu Mar 3rd 2022
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

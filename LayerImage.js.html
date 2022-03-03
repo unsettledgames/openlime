@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Source: CombinerLayer.js</title>
+	<title>OpenLIME Source: LayerImage.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -33,7 +33,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Annotation.html">Annotation</a></li><li><a href="AnnotationLayer.html">AnnotationLayer</a></li><li><a href="BRDFLayer.html">BRDFLayer</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="CombinerLayer.html">CombinerLayer</a></li><li><a href="Controller.html">Controller</a></li><li><a href="ImageLayer.html">ImageLayer</a></li><li><a href="Layer.html">Layer</a></li><li><a href="Layout.html">Layout</a></li><li><a href="LensLayer.html">LensLayer</a></li><li><a href="OpenLIME.html">OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="RTILayer.html">RTILayer</a></li><li><a href="RTIShader.html">RTIShader</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="SvgAnnotationLayer.html">SvgAnnotationLayer</a></li>
+					<li><a href="Annotation.html">Annotation</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="OpenLIME.html">OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li>
 				</ul>
 			</li>
 			
@@ -72,154 +72,73 @@
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: CombinerLayer.js</h1>
+		<h1 class="page-title">Source: LayerImage.js</h1>
     
 <section>
     <article>
         <pre
-            class="sunlight-highlight-javascript linenums">
-import { Layer }  from './Layer.js'
+            class="sunlight-highlight-javascript linenums">import { Layer }  from './Layer.js'
 import { Raster } from './Raster.js'
 import { Shader } from './Shader.js'
 import { Layout } from './Layout.js'
-import { ShaderCombiner } from './ShaderCombiner.js'
 
 /**
- * Combines other layers (using a framebuffer) using a shader. Lens is an example. Extends {@link Layer}.
+ * Display a simple image. Extends {@link Layer}.
  * @param {options} options Same as {@link Layer}, but url and layout are required.
  */
-class CombinerLayer extends Layer {
+
+class LayerImage extends Layer {
 	constructor(options) {
 		super(options);
 
 		if(Object.keys(this.rasters).length != 0)
 			throw "Rasters options should be empty!";
 
-/*		let shader = new ShaderCombiner({
-			'label': 'Combiner',
-			'samplers': [{ id:0, name:'source1', type:'vec3' }, { id:1, name:'source2', type:'vec3' }],
+		if(!this.url)
+			throw "Url option is required";
+
+		this.layout.setUrls([this.url]);
+		let raster = new Raster({ type: 'vec3', attribute: 'kd', colorspace: 'sRGB' });
+
+		this.rasters.push(raster);
+		
+
+		let shader = new Shader({
+			'label': 'Rgb',
+			'samplers': [{ id:0, name:'kd', type:'vec3' }]
 		});
+		
+		shader.fragShaderSrc = function(gl) {
+
+			let gl2 = !(gl instanceof WebGLRenderingContext);
+			let str = `${gl2? '#version 300 es' : ''}
+
+precision highp float;
+precision highp int;
+
+uniform sampler2D kd;
+
+${gl2? 'in' : 'varying'} vec2 v_texcoord;
+${gl2? 'out' : ''} vec4 color;
+
+
+void main() {
+	color = texture${gl2?'':'2D'}(kd, v_texcoord);
+	${gl2? '':'gl_FragColor = color;'}
+}
+`;
+			return str;
+
+		};
 
 		this.shaders = {'standard': shader };
-		this.setShader('standard'); */
-
-//todo if layers check for importjson
-
-		this.textures = [];
-		this.framebuffers = [];
-		this.status = 'ready';
-	}
-
-
-	draw(transform, viewport) {
-		for(let layer of this.layers)
-			if(layer.status != 'ready')
-				return;
-
-		if(!this.shader)
-			throw "Shader not specified!";
-
-		let w = viewport.dx;
-		let h = viewport.dy;
-
-		if(!this.framebuffers.length || this.layout.width != w || this.layout.height != h) {
-			this.deleteFramebuffers();
-			this.layout.width = w;
-			this.layout.height = h;
-			this.createFramebuffers();
-		}
-
-		let gl = this.gl;
-		var b = [0, 0, 0, 0];
-		gl.clearColor(b[0], b[1], b[2], b[3]);
-
-
-//TODO optimize: render to texture ONLY if some parameters change!
-//provider di textures... max memory and reference counting.
-
-		for(let i = 0; i &lt; this.layers.length; i++) { 
-			gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffers[i]);
-			gl.clear(gl.COLOR_BUFFER_BIT);
-			this.layers[i].draw(transform, {x:0, y:0, dx:w, dy:h, w:w, h:h});
-			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		}
-
-
-		this.prepareWebGL();
-
-		for(let i = 0; i &lt; this.layers.length; i++) {
-			gl.uniform1i(this.shader.samplers[i].location, i);
-			gl.activeTexture(gl.TEXTURE0 + i);
-			gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
-		}
-
-
-
-		this.updateTileBuffers(
-			new Float32Array([-1, -1, 0,  -1, 1, 0,  1, 1, 0,  1, -1, 0]), 
-			new Float32Array([ 0,  0,      0, 1,     1, 1,     1,  0]));
-		gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT,0);
-	}
-
-	
-	createFramebuffers() {
-		let gl = this.gl;
-		for(let i = 0; i &lt; this.layers.length; i++) {
-			//TODO for thing like lens, we might want to create SMALLER textures for some layers.
-			const texture = gl.createTexture();
-
-			gl.bindTexture(gl.TEXTURE_2D, texture);
-
-			const level = 0;
-			const internalFormat = gl.RGBA;
-			const border = 0;
-			const format = gl.RGBA;
-			const type = gl.UNSIGNED_BYTE;
-			gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
-				this.layout.width, this.layout.height, border, format, type, null);
-
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-			const framebuffer = gl.createFramebuffer();
-			gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-			this.textures[i] = texture;
-			this.framebuffers[i] = framebuffer;
-		}
-	}
-	//TODO release textures and framebuffers
-	deleteFramebuffers() {
-	}
-
-	boundingBox() {
-		// Combiner ask the combination of all its children boxes
-		// keeping the hidden, because they could be hidden, but revealed by the combiner
-		const discardHidden = false;
-		let result = Layer.computeLayersBBox(this.layers, discardHidden);
-		if (this.transform != null &amp;&amp; this.transform != undefined) {
-			result = this.transform.transformBox(result);
-		}
-		return result;
-	}
-	
-	scale() {
-		// Combiner ask the scale of all its children
-		// keeping the hidden, because they could be hidden, but revealed by the combiner
-		const discardHidden = false;
-		console.log("Combiner compute scale, visible " + this.visible);
-		let scale = Layer.computeLayersMinScale(this.layers, discardHidden);
-		scale *= this.transform.z;
-		return scale;
+		this.setShader('standard');
 	}
 }
 
-Layer.prototype.types['combiner'] = (options) => { return new ImageCombiner(options); }
+Layer.prototype.types['image'] = (options) => { return new LayerImage(options); }
 
-export { CombinerLayer }
+export { LayerImage }
 </pre>
     </article>
 </section>
@@ -267,7 +186,7 @@ export { CombinerLayer }
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
 	
-		on Mon Feb 28th 2022
+		on Thu Mar 3rd 2022
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

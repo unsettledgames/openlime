@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Source: ImageLayer.js</title>
+	<title>OpenLIME Class: LayerCombiner</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -33,7 +33,7 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Annotation.html">Annotation</a></li><li><a href="AnnotationLayer.html">AnnotationLayer</a></li><li><a href="BRDFLayer.html">BRDFLayer</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="CombinerLayer.html">CombinerLayer</a></li><li><a href="Controller.html">Controller</a></li><li><a href="ImageLayer.html">ImageLayer</a></li><li><a href="Layer.html">Layer</a></li><li><a href="Layout.html">Layout</a></li><li><a href="LensLayer.html">LensLayer</a></li><li><a href="OpenLIME.html">OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="RTILayer.html">RTILayer</a></li><li><a href="RTIShader.html">RTIShader</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="SvgAnnotationLayer.html">SvgAnnotationLayer</a></li>
+					<li><a href="Annotation.html">Annotation</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="OpenLIME.html">OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li>
 				</ul>
 			</li>
 			
@@ -67,82 +67,185 @@
 <div class="row">
 
 	
-	<div class="col-md-12">
+	<div class="col-md-8">
 	
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: ImageLayer.js</h1>
-    
+	<h1 class="page-title">Class: LayerCombiner</h1>
 <section>
-    <article>
-        <pre
-            class="sunlight-highlight-javascript linenums">import { Layer }  from './Layer.js'
-import { Raster } from './Raster.js'
-import { Shader } from './Shader.js'
-import { Layout } from './Layout.js'
 
-/**
- * Display a simple image. Extends {@link Layer}.
- * @param {options} options Same as {@link Layer}, but url and layout are required.
- */
-
-class ImageLayer extends Layer {
-	constructor(options) {
-		super(options);
-
-		if(Object.keys(this.rasters).length != 0)
-			throw "Rasters options should be empty!";
-
-		if(!this.url)
-			throw "Url option is required";
-
-		this.layout.setUrls([this.url]);
-		let raster = new Raster({ type: 'vec3', attribute: 'kd', colorspace: 'sRGB' });
-
-		this.rasters.push(raster);
-		
-
-		let shader = new Shader({
-			'label': 'Rgb',
-			'samplers': [{ id:0, name:'kd', type:'vec3' }]
-		});
-		
-		shader.fragShaderSrc = function(gl) {
-
-			let gl2 = !(gl instanceof WebGLRenderingContext);
-			let str = `${gl2? '#version 300 es' : ''}
-
-precision highp float;
-precision highp int;
-
-uniform sampler2D kd;
-
-${gl2? 'in' : 'varying'} vec2 v_texcoord;
-${gl2? 'out' : ''} vec4 color;
+<header>
+    
+        <h2>
+        LayerCombiner
+        </h2>
+        
+            <div class="class-description"><p>Combines other layers (using a framebuffer) using a shader. Lens is an example. Extends <a href="Layer.html">Layer</a>.</p></div>
+        
+    
+</header>
 
 
-void main() {
-	color = texture${gl2?'':'2D'}(kd, v_texcoord);
-	${gl2? '':'gl_FragColor = color;'}
-}
-`;
-			return str;
+<article>
+    <div class="container-overview">
+    
+        
+<hr>
+<dt>
+    <h4 class="name" id="LayerCombiner"><span class="type-signature"></span>new LayerCombiner(options)</h4>
+    
+    
+</dt>
+<dd>
 
-		};
+    
 
-		this.shaders = {'standard': shader };
-		this.setShader('standard');
-	}
-}
+    
 
-Layer.prototype.types['image'] = (options) => { return new ImageLayer(options); }
+    
 
-export { ImageLayer }
-</pre>
-    </article>
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">options</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Same as <a href="Layer.html">Layer</a>, but url and layout are required.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="LayerCombiner.js.html">LayerCombiner.js</a>,
+				 <a href="LayerCombiner.js.html#sunlight-1-line-12">line 12</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
 </section>
-
 
 
 
@@ -152,6 +255,10 @@ export { ImageLayer }
 
 	<div class="clearfix"></div>
 
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
 	
 
 </div>
@@ -186,7 +293,7 @@ export { ImageLayer }
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
 	
-		on Mon Feb 28th 2022
+		on Thu Mar 3rd 2022
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

@@ -79,7 +79,7 @@ let anno = new OpenLIME.SvgAnnotationLayer({
 		<h3>${annotation.class}</h3>
 		<p>${annotation.description}</p>
 		`; },
-	annotations: 'crud.php',
+	annotations: 'json.php',
 	editable: true,
 }); 
 
@@ -130,7 +130,7 @@ editor.multiple = true;
 
 async function processRequest(anno, action) {
 	anno.action = action;
-	const response = await fetch('crud.php', {method: 'POST', body: JSON.stringify(anno)});
+	const response = await fetch('json.php', {method: 'POST', body: JSON.stringify(anno)});
 	if (!response.ok) {
 		 const message = `An error has occured: ${response.status} ${response.statusText} `;
 		 alert(message);

@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Source: Canvas.js</title>
+	<title>OpenLIME Source: Viewer.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -79,203 +79,134 @@
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: Canvas.js</h1>
+		<h1 class="page-title">Source: Viewer.js</h1>
     
 <section>
     <article>
         <pre
-            class="sunlight-highlight-javascript linenums">import { Camera } from './Camera.js'
-import { Layer  } from './Layer.js'
-import { Cache } from './Cache.js'
+            class="sunlight-highlight-javascript linenums">import { Canvas } from './Canvas.js'
+import { Camera } from './Camera.js'
+
+import { PointerManager } from './PointerManager.js'
 
 /**
- * @param {Element|String} canvas dom element or query selector for a &lt;canvas> element.
- * @param {Element} overlay DIV containing annotations, TODO: at the moment it is just passed to the layers (might need refactoring)
- * @param {Camera} camera (see {@link Camera})
- * @param {Object} options
- * * *layers*: Object specifies layers (see. {@link Layer})
- * * *preserveDrawingBuffer* needed for screenshots (otherwise is just a performance penalty)
+ * Manages an OpenLIME viewer functionality on a canvas
+ * how do I write more substantial documentation.
+ *
+ * @param {div} div of the DOM or selector (es. '#canvasid'), or a canvas.
+ * @param {string} options is a url to a JSON describing the viewer content
+ * @param {object} options is a JSON describing the viewer content
+ *  * **animate**: default *true*, calls requestAnimation() and manages refresh.
+ *  * **background**: css style for background (overwrites css if present)
  * 
- * **Signals:**
- * Emits *"update"* event when a layer updates or is added or removed.
- * 
+ * @example
+ * const lime = new OpenLIME.OpenLIME('.openlime');
+ * // .openlime is the class of a DIV element in the DOM.
  */
 
-class Canvas {
-	constructor(canvas, overlay, camera, options) {
-		Object.assign(this, { 
-			canvasElement: null,
-			preserveDrawingBuffer: false, 
-			gl: null,
-			overlayElement: overlay,
-			camera: camera,
-			layers: {},
-			signals: {'update':[], 'updateSize':[], 'ready': []}
-		});
-		Object.assign(this, options);
+class Viewer {
 
-		this.init(canvas);
-			
-		for(let id in this.layers)
-		this.addLayer(id, new Layer(id, this.layers[id]));
-		this.camera.addEvent('update', () => this.emit('update'));
-	}
+    constructor(div, options) {
 
-	addEvent(event, callback) {
-		this.signals[event].push(callback);
-	}
-	
-	emit(event) {
-		for(let r of this.signals[event])
-			r(this);
-	}
-
-	//TODO move gl context to canvas!
-	init(canvas) {
-		if(!canvas)
-			throw "Missing element parameter"
-
-		if(typeof(canvas) == 'string') {
-			canvas = document.querySelector(canvas);
-			if(!canvas)
-				throw "Could not find dom element.";
-		}
-
-		if(!canvas.tagName)
-			throw "Element is not a DOM element"
-
-		if(canvas.tagName != "CANVAS")
-			throw "Element is not a canvas element";
-
-		this.canvasElement = canvas;
-
-		/* test context loss */
-		/* canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
-		canvas.loseContextInNCalls(1000); */
+        Object.assign(this, {
+            background: null,
+            canvas: {},
+            controllers: [],
+            camera: new Camera()
+        });
 
 
-		let glopt = { antialias: false, depth: false, preserveDrawingBuffer: this.preserveDrawingBuffer };
-		this.gl = this.gl || 
-			canvas.getContext("webgl2", glopt) || 
-			canvas.getContext("webgl", glopt) || 
-			canvas.getContext("experimental-webgl", glopt) ;
+        if (typeof (div) == 'string')
+            div = document.querySelector(div);
 
-		if (!this.gl)
-			throw "Could not create a WebGL context";
+        if (!div)
+            throw "Missing element parameter";
 
-		canvas.addEventListener("webglcontextlost", (event) => { console.log("Context lost."); event.preventDefault(); }, false);
-		canvas.addEventListener("webglcontextrestored", ()  => { this.restoreWebGL(); }, false);
-		document.addEventListener("visibilitychange", (event) => { if(this.gl.isContextLost()) { this.restoreWebGL(); }});
+        Object.assign(this, options);
+        if (this.background)
+            div.style.background = this.background;
 
-		/* DEBUG OpenGL calls */
-		/*function logGLCall(functionName, args) {   
-			console.log("gl." + functionName + "(" + 
-			WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");   
-		} 
-		this.gl = WebGLDebugUtils.makeDebugContext(this.gl, undefined, logGLCall);  */
+        this.containerElement = div;
+        this.canvasElement = div.querySelector('canvas');
+        if (!this.canvasElement) {
+            this.canvasElement = document.createElement('canvas');
+            div.prepend(this.canvasElement);
+        }
+
+        this.overlayElement = document.createElement('div');
+        this.overlayElement.classList.add('openlime-overlay');
+        this.containerElement.appendChild(this.overlayElement);
 
 
-	}
+        this.canvas = new Canvas(this.canvasElement, this.overlayElement, this.camera, this.canvas);
+        this.canvas.addEvent('update', () => { this.redraw(); });
 
-	restoreWebGL() {
-		let glopt = { antialias: false, depth: false, preserveDrawingBuffer: this.preserveDrawingBuffer };
-		this.gl = this.gl || 
-			canvas.getContext("webgl2", glopt) || 
-			canvas.getContext("webgl", glopt) || 
-			canvas.getContext("experimental-webgl", glopt) ;
+        this.pointerManager = new PointerManager(this.overlayElement);
 
-		for(let layer of Object.values(this.layers)) {
-			layer.gl = this.gl;
-			layer.clear();
-			if(layer.shader)
-				layer.shader.restoreWebGL(this.gl);
-		}
-		this.prefetch();
-		this.emit('update');
-	}
+        this.canvasElement.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
 
-	addLayer(id, layer) {
-		layer.id = id;
-		layer.addEvent('ready', () => { 
-			if(Object.values(this.layers).every( l => l.status == 'ready'))
-				this.emit('ready');
-			this.prefetch();
-		});
-		layer.addEvent('update', () => { this.emit('update'); });
-		layer.addEvent('updateSize', () => { this.updateSize(); });
-		layer.gl = this.gl;
-		layer.overlayElement = this.overlayElement;
-		this.layers[id] = layer;
-		this.prefetch();
-	}
+        var resizeobserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                this.resize(entry.contentRect.width, entry.contentRect.height);
+            }
+        });
+        resizeobserver.observe(this.canvasElement);
 
-	removeLayer(layer) {
-		layer.clear(); //order is important.
+        this.resize(this.canvasElement.clientWidth, this.canvasElement.clientHeight);
+    }
 
-		delete this.layers[layer.id];
-		delete Cache.layers[layer];
-		this.prefetch();
-	}
 
-	updateSize() {
-		const discardHidden = true;
-		let sceneBBox = Layer.computeLayersBBox(this.layers, discardHidden);
-		let minScale =  Layer.computeLayersMinScale(this.layers, discardHidden);
-		
-		if (sceneBBox != null) this.camera.updateBounds(sceneBBox, minScale);
-		this.emit('updateSize');
-	}
+    /* Convenience function, it actually passes to Canvas
+    */
+    addLayer(id, layer) {
+        canvas.addLayer(id, layer);
+    }
 
-	draw(time) {
-		let gl = this.gl;
-		let view = this.camera.glViewport();
-		gl.viewport(view.x, view.y, view.dx, view.dy);
+    /**
+    * Resize the canvas (and the overlay) and triggers a redraw.
+    */
 
-		var b = [0, 0, 0, 0];
-		gl.clearColor(b[0], b[1], b[2], b[3], b[4]);
-		gl.clear(gl.COLOR_BUFFER_BIT);
+    resize(width, height) {
+        // Test with retina display!
+        this.canvasElement.width = width * window.devicePixelRatio;
+        this.canvasElement.height = height * window.devicePixelRatio;
 
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		gl.enable(gl.BLEND);
+        this.camera.setViewport({ x: 0, y: 0, dx: width, dy: height, w: width, h: height });
+        this.canvas.prefetch();
+        this.redraw();
+    }
 
-		//TODO: getCurren shoudl redurn {position, done}
-		let pos = this.camera.getGlCurrentTransform(time);
-		//todo we could actually prefetch toward the future a little bit
-		this.prefetch(pos);
+    /**
+    *
+    * Schedule a drawing.
+    */
+    redraw() {
+        if (this.animaterequest) return;
+        this.animaterequest = requestAnimationFrame((time) => { this.draw(time); });
+    }
 
-		//pos layers using zindex.
-		let ordered = Object.values(this.layers).sort( (a, b) => a.zindex - b.zindex);
+    /**
+    * Do not call this if OpenLIME is animating, use redraw()
+    * @param {time} time as in performance.now()
+    */
+    draw(time) {
+        if (!time) time = performance.now();
+        this.animaterequest = null;
 
-		//NOTICE: camera(pos) must be relative to the WHOLE canvas
-		let done = true;
-		for(let layer of ordered)
-			if(layer.visible)
-				done = layer.draw(pos, view) &amp;&amp; done;
+        let viewport = this.camera.viewport;
+        let transform = this.camera.getCurrentTransform(time);
 
-		//TODO not really an elegant solution to tell if we have reached the target, the check should be in getCurrentTransform.
-		return done &amp;&amp; pos.t >= this.camera.target.t;
-	}
+        let done = this.canvas.draw(time);
+        if (!done)
+            this.redraw();
+    }
 
-/**
- * This function have each layer to check which tiles are needed and schedule them for download.
- * @param {object} transform is the camera position (layer will combine with local transform).
- */
-	prefetch(transform) {
-		if(!transform)
-			transform = this.camera.getGlCurrentTransform(performance.now());
-		for(let id in this.layers) {
-			let layer = this.layers[id];
-			//console.log(layer);
-			//console.log(layer.layout.status);
-			if(layer.visible &amp;&amp; layer.status == 'ready') {
-				layer.prefetch(transform, this.camera.glViewport());
-			}
-		}
-	}
 }
 
-export { Canvas }
-</pre>
+export { Viewer };</pre>
     </article>
 </section>
 

@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Source: Canvas.js</title>
+	<title>OpenLIME Class: Viewer</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -74,211 +74,563 @@
 <div class="row">
 
 	
-	<div class="col-md-12">
+	<div class="col-md-8">
 	
 		<div id="main">
 			
 
-		<h1 class="page-title">Source: Canvas.js</h1>
-    
+	<h1 class="page-title">Class: Viewer</h1>
 <section>
-    <article>
-        <pre
-            class="sunlight-highlight-javascript linenums">import { Camera } from './Camera.js'
-import { Layer  } from './Layer.js'
-import { Cache } from './Cache.js'
 
-/**
- * @param {Element|String} canvas dom element or query selector for a &lt;canvas> element.
- * @param {Element} overlay DIV containing annotations, TODO: at the moment it is just passed to the layers (might need refactoring)
- * @param {Camera} camera (see {@link Camera})
- * @param {Object} options
- * * *layers*: Object specifies layers (see. {@link Layer})
- * * *preserveDrawingBuffer* needed for screenshots (otherwise is just a performance penalty)
- * 
- * **Signals:**
- * Emits *"update"* event when a layer updates or is added or removed.
- * 
- */
+<header>
+    
+        <h2>
+        Viewer
+        </h2>
+        
+            <div class="class-description"><p>Manages an OpenLIME viewer functionality on a canvas
+how do I write more substantial documentation.</p></div>
+        
+    
+</header>
 
-class Canvas {
-	constructor(canvas, overlay, camera, options) {
-		Object.assign(this, { 
-			canvasElement: null,
-			preserveDrawingBuffer: false, 
-			gl: null,
-			overlayElement: overlay,
-			camera: camera,
-			layers: {},
-			signals: {'update':[], 'updateSize':[], 'ready': []}
-		});
-		Object.assign(this, options);
 
-		this.init(canvas);
-			
-		for(let id in this.layers)
-		this.addLayer(id, new Layer(id, this.layers[id]));
-		this.camera.addEvent('update', () => this.emit('update'));
-	}
+<article>
+    <div class="container-overview">
+    
+        
+<hr>
+<dt>
+    <h4 class="name" id="Viewer"><span class="type-signature"></span>new Viewer(div, options, options)</h4>
+    
+    
+</dt>
+<dd>
 
-	addEvent(event, callback) {
-		this.signals[event].push(callback);
-	}
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>div</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">div</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>of the DOM or selector (es. '#canvasid'), or a canvas.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>is a url to a JSON describing the viewer content</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>is a JSON describing the viewer content</p>
+<ul>
+<li><strong>animate</strong>: default <em>true</em>, calls requestAnimation() and manages refresh.</li>
+<li><strong>background</strong>: css style for background (overwrites css if present)</li>
+</ul></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
 	
-	emit(event) {
-		for(let r of this.signals[event])
-			r(this);
-	}
 
-	//TODO move gl context to canvas!
-	init(canvas) {
-		if(!canvas)
-			throw "Missing element parameter"
+	
 
-		if(typeof(canvas) == 'string') {
-			canvas = document.querySelector(canvas);
-			if(!canvas)
-				throw "Could not find dom element.";
-		}
+	
 
-		if(!canvas.tagName)
-			throw "Element is not a DOM element"
+    
 
-		if(canvas.tagName != "CANVAS")
-			throw "Element is not a canvas element";
+    
 
-		this.canvasElement = canvas;
+    
 
-		/* test context loss */
-		/* canvas = WebGLDebugUtils.makeLostContextSimulatingCanvas(canvas);
-		canvas.loseContextInNCalls(1000); */
+    
+
+	
+
+	
+
+	
+
+	
+
+	
 
 
-		let glopt = { antialias: false, depth: false, preserveDrawingBuffer: this.preserveDrawingBuffer };
-		this.gl = this.gl || 
-			canvas.getContext("webgl2", glopt) || 
-			canvas.getContext("webgl", glopt) || 
-			canvas.getContext("experimental-webgl", glopt) ;
 
-		if (!this.gl)
-			throw "Could not create a WebGL context";
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Viewer.js.html">Viewer.js</a>,
+				 <a href="Viewer.js.html#sunlight-1-line-21">line 21</a>
+			</li>
+		</ul>
+	</dd>
+	
 
-		canvas.addEventListener("webglcontextlost", (event) => { console.log("Context lost."); event.preventDefault(); }, false);
-		canvas.addEventListener("webglcontextrestored", ()  => { this.restoreWebGL(); }, false);
-		document.addEventListener("visibilitychange", (event) => { if(this.gl.isContextLost()) { this.restoreWebGL(); }});
+	
 
-		/* DEBUG OpenGL calls */
-		/*function logGLCall(functionName, args) {   
-			console.log("gl." + functionName + "(" + 
-			WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");   
-		} 
-		this.gl = WebGLDebugUtils.makeDebugContext(this.gl, undefined, logGLCall);  */
+	
+
+	
+</dl>
 
 
-	}
+    
 
-	restoreWebGL() {
-		let glopt = { antialias: false, depth: false, preserveDrawingBuffer: this.preserveDrawingBuffer };
-		this.gl = this.gl || 
-			canvas.getContext("webgl2", glopt) || 
-			canvas.getContext("webgl", glopt) || 
-			canvas.getContext("experimental-webgl", glopt) ;
+    
 
-		for(let layer of Object.values(this.layers)) {
-			layer.gl = this.gl;
-			layer.clear();
-			if(layer.shader)
-				layer.shader.restoreWebGL(this.gl);
-		}
-		this.prefetch();
-		this.emit('update');
-	}
+    
 
-	addLayer(id, layer) {
-		layer.id = id;
-		layer.addEvent('ready', () => { 
-			if(Object.values(this.layers).every( l => l.status == 'ready'))
-				this.emit('ready');
-			this.prefetch();
-		});
-		layer.addEvent('update', () => { this.emit('update'); });
-		layer.addEvent('updateSize', () => { this.updateSize(); });
-		layer.gl = this.gl;
-		layer.overlayElement = this.overlayElement;
-		this.layers[id] = layer;
-		this.prefetch();
-	}
+    
 
-	removeLayer(layer) {
-		layer.clear(); //order is important.
+    
 
-		delete this.layers[layer.id];
-		delete Cache.layers[layer];
-		this.prefetch();
-	}
+    
 
-	updateSize() {
-		const discardHidden = true;
-		let sceneBBox = Layer.computeLayersBBox(this.layers, discardHidden);
-		let minScale =  Layer.computeLayersMinScale(this.layers, discardHidden);
-		
-		if (sceneBBox != null) this.camera.updateBounds(sceneBBox, minScale);
-		this.emit('updateSize');
-	}
+    
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">const lime = new OpenLIME.OpenLIME(&#x27;.openlime&#x27;);
+// .openlime is the class of a DIV element in the DOM.</pre>
 
-	draw(time) {
-		let gl = this.gl;
-		let view = this.camera.glViewport();
-		gl.viewport(view.x, view.y, view.dx, view.dy);
 
-		var b = [0, 0, 0, 0];
-		gl.clearColor(b[0], b[1], b[2], b[3], b[4]);
-		gl.clear(gl.COLOR_BUFFER_BIT);
+    
+</dd>
 
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		gl.enable(gl.BLEND);
+    
+    </div>
 
-		//TODO: getCurren shoudl redurn {position, done}
-		let pos = this.camera.getGlCurrentTransform(time);
-		//todo we could actually prefetch toward the future a little bit
-		this.prefetch(pos);
+    
 
-		//pos layers using zindex.
-		let ordered = Object.values(this.layers).sort( (a, b) => a.zindex - b.zindex);
+    
 
-		//NOTICE: camera(pos) must be relative to the WHOLE canvas
-		let done = true;
-		for(let layer of ordered)
-			if(layer.visible)
-				done = layer.draw(pos, view) &amp;&amp; done;
+    
 
-		//TODO not really an elegant solution to tell if we have reached the target, the check should be in getCurrentTransform.
-		return done &amp;&amp; pos.t >= this.camera.target.t;
-	}
+    
 
-/**
- * This function have each layer to check which tiles are needed and schedule them for download.
- * @param {object} transform is the camera position (layer will combine with local transform).
- */
-	prefetch(transform) {
-		if(!transform)
-			transform = this.camera.getGlCurrentTransform(performance.now());
-		for(let id in this.layers) {
-			let layer = this.layers[id];
-			//console.log(layer);
-			//console.log(layer.layout.status);
-			if(layer.visible &amp;&amp; layer.status == 'ready') {
-				layer.prefetch(transform, this.camera.glViewport());
-			}
-		}
-	}
-}
+    
 
-export { Canvas }
-</pre>
-    </article>
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<hr>
+<dt>
+    <h4 class="name" id="draw"><span class="type-signature"></span>draw(time)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Do not call this if OpenLIME is animating, use redraw()</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>time</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">time</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>as in performance.now()</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Viewer.js.html">Viewer.js</a>,
+				 <a href="Viewer.js.html#sunlight-1-line-109">line 109</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="redraw"><span class="type-signature"></span>redraw()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Schedule a drawing.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Viewer.js.html">Viewer.js</a>,
+				 <a href="Viewer.js.html#sunlight-1-line-100">line 100</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="resize"><span class="type-signature"></span>resize()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Resize the canvas (and the overlay) and triggers a redraw.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Viewer.js.html">Viewer.js</a>,
+				 <a href="Viewer.js.html#sunlight-1-line-86">line 86</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+</article>
+
 </section>
-
 
 
 
@@ -288,6 +640,10 @@ export { Canvas }
 
 	<div class="clearfix"></div>
 
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
 	
 
 </div>

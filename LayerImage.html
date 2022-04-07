@@ -13,6 +13,8 @@
 
 	<link type="text/css" rel="stylesheet" href="styles/site.cerulean.css">
 
+	<link type="text/css" rel="stylesheet" href="styles/openlime.css">
+
 </head>
 
 <body>
@@ -40,7 +42,14 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Annotation.html">Annotation</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Viewer.html">Viewer</a></li>
+					<li><a href="Annotation.html">Annotation</a></li><li><a href="BoundingBox.html">BoundingBox</a></li><li><a href="Cache.html">Cache</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Controller2D.html">Controller2D</a></li><li><a href="ControllerPanZoom.html">ControllerPanZoom</a></li><li><a href="EditorSvgAnnotation.html">EditorSvgAnnotation</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Skin.html">Skin</a></li><li><a href="Transform.html">Transform</a></li><li><a href="UIBasic.html">UIBasic</a></li><li><a href="UIDialog.html">UIDialog</a></li><li><a href="Viewer.html">Viewer</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Camera.html#event:update">Camera#event:update</a></li><li><a href="Canvas.html#event:ready">Canvas#event:ready</a></li><li><a href="Canvas.html#event:update">Canvas#event:update</a></li><li><a href="Canvas.html#event:updateSize">Canvas#event:updateSize</a></li><li><a href="Layer.html#event:ready">Layer#event:ready</a></li><li><a href="Layer.html#event:update">Layer#event:update</a></li><li><a href="Layout.html#event:ready">Layout#event:ready</a></li><li><a href="Layout.html#event:updateSize">Layout#event:updateSize</a></li><li><a href="UIDialog.html#event:closed">UIDialog#event:closed</a></li>
 				</ul>
 			</li>
 			
@@ -48,6 +57,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Howto<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-getting-started.html">Getting started with OpenLIME</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#crudCallback">crudCallback</a></li><li><a href="global.html#simplify">simplify</a></li><li><a href="global.html#smooth">smooth</a></li><li><a href="global.html#smoothToPath">smoothToPath</a></li>
 				</ul>
 			</li>
 			
@@ -88,7 +104,7 @@
         LayerImage
         </h2>
         
-            <div class="class-description"><p>Display a simple image. Extends <a href="Layer.html">Layer</a>.</p></div>
+            <div class="class-description"><p>The class LayerImage is derived from Layer and it is responsible for the rendering of simple images.</p></div>
         
     
 </header>
@@ -106,6 +122,13 @@
 </dt>
 <dd>
 
+    
+    <div class="description">
+        <p>Displays a simple image.
+An object literal with Layer <code>options</code> can be specified.
+The class LayerImage can also be instantiated via the Layer parent class and <code>options.type='image'</code>.</p>
+<pre><code>  Extends <a href="Layer.html">Layer</a>.</code></pre>
+    </div>
     
 
     
@@ -145,7 +168,7 @@
             <td class="type">
             
                 
-<span class="param-type">options</span>
+<span class="param-type">Object</span>
 
 
 
@@ -156,7 +179,96 @@
 
             
 
-            <td class="description last"><p>Same as <a href="Layer.html">Layer</a>, but url and layout are required.</p></td>
+            <td class="description last"><p>an object literal with Layer options <a href="Layer.html">Layer</a>, but <code>options.url</code> and <code>options.layout</code> are required.</p>
+                <h6 class="method-params-label method-subparams-label">Properties</h6>
+                
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The URL of the image</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>layout</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type"><a href="Layout.html">Layout</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    'image'
+                
+                </td>
+            
+
+            <td class="description last"><p>The layout (the format of the input raster images).</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -201,7 +313,7 @@
 		<ul class="dummy">
 			<li>
 				<a href="LayerImage.js.html">LayerImage.js</a>,
-				 <a href="LayerImage.js.html#sunlight-1-line-10">line 10</a>
+				 <a href="LayerImage.js.html#sunlight-1-line-17">line 17</a>
 			</li>
 		</ul>
 	</dd>
@@ -226,6 +338,18 @@
     
 
     
+
+    
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">// Create an image layer and add it to the canvans
+const layer = new OpenLIME.Layer({
+    layout: &#x27;image&#x27;,
+    type: &#x27;image&#x27;,
+    url: &#x27;../../assets/lime/image/lime.jpg&#x27;
+});
+lime.addLayer(&#x27;Base&#x27;, layer);</pre>
+
 
     
 </dd>

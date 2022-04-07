@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Class: Controller</title>
+	<title>OpenLIME Class: UIBasic</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -95,40 +95,39 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: Controller</h1>
+	<h1 class="page-title">Class: UIBasic</h1>
 <section>
 
 <header>
     
         <h2>
-        Controller
+        UIBasic
         </h2>
         
-            <div class="class-description"><p><strong>Controller</strong> is a virtual base class that handles user interaction via device events (mouse/touch events).
-It provides an abstract user interface to define interaction actions such as panning, pinching, tapping, etc...
-The actions are implemented by pre-defined callback functions:</p>
+            <div class="class-description"><p><strong>UIBasic</strong> is a flexible and easy-to-use class that implements a complete user interface to bind to the <code>viewer</code>
+The interface is associated with a CSS file (skin.css) that defines the style of the HTML DOM and a graphic
+file (skin.svg) that specifies the geometric characteristics of the tool buttons.</p>
+<p>The class provides a set of default ready-to-use tools (called actions):</p>
 <ul>
-<li><code>panStart(e)</code> intercepts the initial pan event (movement of the mouse after pressing a mouse button or moving a finger).
-The event is captured calling <code>e.preventDefault()</code>.</li>
-<li><code>panMove(e)</code> receives and handles the pan event.</li>
-<li><code>panEnd(e)</code> intercepts the final pan event (the user releases the left mouse button or removes his finger from the screen).</li>
-<li><code>pinchStart(e1, e2)</code> intercepts the initial pinch event (a continuous gesture that tracks the positions between the first two fingers that touch the screen).
-The event is captured calling <code>e1.preventDefault()</code>.</li>
-<li><code>pinchMove(e1,e2)</code> receives and handles the pinch event.</li>
-<li><code>pinchEnd(e1,e2)</code> intercepts the final pinch event (the user removes one of their two fingers from the screen).</li>
-<li><code>mouseWheel(e)</code> receives and handles the mouse wheel event (the user rotates the mouse wheel button).</li>
-<li><code>fingerSingleTap(e)</code> receives and handles the single-tap event (the user presses a mouse button quickly or touches the screen shortly with a finger).</li>
-<li><code>fingerDoubleTap(e)</code> receives and handles the double-tap event (the user quickly presses a mouse button twice or shortly touches the screen with a finger twice).</li>
+<li><strong>home</strong> resets the camera.</li>
+<li><strong>fullscreen</strong> enables the fullscreen mode.</li>
+<li><strong>layers</strong> displays the layer menu.</li>
+<li><strong>zoomin</strong> performs a camera zoom-in.</li>
+<li><strong>zoomout</strong> performs a camera zoom-out.</li>
+<li><strong>rotate</strong> rotates the camera around the z-axis (by 45-degs steps).</li>
+<li><strong>light</strong> enables light manipulation.</li>
+<li><strong>help</strong> displays a help dialog box.</li>
 </ul>
-<p><code>e.preventDefault()</code> will capture the event and wont be propagated to other controllers.</p>
-<p>This class only describes user interactions by implementing actions or callbacks. A <strong>Controller</strong> works in concert with a <strong>PointerManager</strong> object
-that emits events and links them to actions.</p>
-<p>In the example below a <strong>ControllerPanZoom</strong> object (derived from <strong>Controller</strong>) is created and associated with the <code>pointerManager</code> of the <code>viewer</code>.</p>
-<pre class="prettyprint source"><code>const panzoom = new OpenLIME.ControllerPanZoom(viewer.camera, {
-    priority: -1000,
-    activeModifiers: [0, 1]
-});
-viewer.pointerManager.onEvent(panzoom);
+<p>In the following example a UIBasic interface is created and binded to the <code>lime</code> viewer.
+The <code>light</code> action is disabled, and the <code>zoomin</code> and <code>zoomout</code> actions are enabled.</p>
+<pre class="prettyprint source"><code>// Creates an User Interface 
+const ui = new OpenLIME.UIBasic(lime);
+
+// Removes light from the toolbar
+ui.actions.light.display=false;
+// Adds zoomin and zoomout to the toolbar
+ui.actions.zoomin.display=true;
+ui.actions.zoomout.display=true;
 </code></pre></div>
         
     
@@ -141,7 +140,7 @@ viewer.pointerManager.onEvent(panzoom);
         
 <hr>
 <dt>
-    <h4 class="name" id="Controller"><span class="type-signature"></span>new Controller( [options])</h4>
+    <h4 class="name" id="UIBasic"><span class="type-signature"></span>new UIBasic(viewer [, options])</h4>
     
     
 </dt>
@@ -149,7 +148,7 @@ viewer.pointerManager.onEvent(panzoom);
 
     
     <div class="description">
-        <p>Instantiates a Controller object.</p>
+        <p>Instantiates a UIBasic object.</p>
     </div>
     
 
@@ -186,6 +185,38 @@ viewer.pointerManager.onEvent(panzoom);
 
         <tr>
             
+                <td class="name"><code>viewer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Viewer.html">Viewer</a></span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The OpenLIME viewer.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>options</code></td>
             
 
@@ -213,7 +244,7 @@ viewer.pointerManager.onEvent(panzoom);
 
             
 
-            <td class="description last"><p>An object literal with controller parameters.</p>
+            <td class="description last"><p>An object literal with UIBasic parameters.</p>
                 <h6 class="method-params-label method-subparams-label">Properties</h6>
                 
 
@@ -241,13 +272,13 @@ viewer.pointerManager.onEvent(panzoom);
 
         <tr>
             
-                <td class="name"><code>panDelay</code></td>
+                <td class="name"><code>skin</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">string</span>
 
 
 
@@ -259,25 +290,25 @@ viewer.pointerManager.onEvent(panzoom);
             
                 <td class="default">
                 
-                    50
+                    'skin/skin.svg'
                 
                 </td>
             
 
-            <td class="description last"><p>Inertial value of the movement in ms for panning movements.</p></td>
+            <td class="description last"><p>The file name of the vector image defining the tool buttons.</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>zoomDelay</code></td>
+                <td class="name"><code>autofit</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">bool</span>
 
 
 
@@ -289,12 +320,12 @@ viewer.pointerManager.onEvent(panzoom);
             
                 <td class="default">
                 
-                    200
+                    true
                 
                 </td>
             
 
-            <td class="description last"><p>A zoom event is smoothed over this delay in ms,</p></td>
+            <td class="description last"><p>Whether the initial position of the camera is set to fit the scene model.</p></td>
         </tr>
 
     
@@ -328,6 +359,90 @@ viewer.pointerManager.onEvent(panzoom);
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>actions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>An Object of <a href="UIBasic.html#Action">UIBasic#Action</a>. A set of default actions are ready to be used.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>attribution</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Some information related to data attribution or credits.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>menu</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;UIBasic#MenuEntry></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>The interface menu structure.</p></td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -375,8 +490,8 @@ viewer.pointerManager.onEvent(panzoom);
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="Controller.js.html">Controller.js</a>,
-				 <a href="Controller.js.html#sunlight-1-line-31">line 31</a>
+				<a href="UIBasic.js.html">UIBasic.js</a>,
+				 <a href="UIBasic.js.html#sunlight-1-line-81">line 81</a>
 			</li>
 		</ul>
 	</dd>
@@ -421,43 +536,47 @@ viewer.pointerManager.onEvent(panzoom);
     
 
     
-        <h3 class="subsection-title">Methods</h3>
+
+    
+        <h3 class="subsection-title">Type Definitions</h3>
 
         <dl>
-            
+                
 <hr>
-<dt>
-    <h4 class="name" id="modifierState"><span class="type-signature"></span>modifierState(e)</h4>
-    
+<dt class="name" id="Action">
+    <h4 id="Action">Action</h4>
+
     
 </dt>
 <dd>
-
     
     <div class="description">
-        <p>Returns the modifier state of the event <code>e</code>. Modifiers are keyboard events that happens simultaneously
-with a device event (e.g. shift + left mouse button).
-The modifiers handled by a controller are:</p>
-<ul>
-<li>NoModifiers = 0</li>
-<li>CrtlModifier = 1</li>
-<li>ShiftModifier = 2</li>
-<li>AltModifier = 4</li>
-</ul>
-<p>The modifier state is the sum of values above corresponding to the key pressed (CTRL, SHIFT or ALT).</p>
+        <p>An Action describes the behaviour of a tool button.</p>
     </div>
     
 
     
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">Object</span>
 
+
+
+            </li>
+        </ul>
     
 
     
+<dl class="details">
     
-        <h5>Parameters:</h5>
-        
 
-<table class="params table table-striped">
+    <h5 class="subsection-title">Properties:</h5>
+
+    <dl>
+
+<table class="props table table-striped">
     <thead>
     <tr>
         
@@ -479,13 +598,13 @@ The modifiers handled by a controller are:</p>
 
         <tr>
             
-                <td class="name"><code>e</code></td>
+                <td class="name"><code>title</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Event</span>
+<span class="param-type">string</span>
 
 
 
@@ -496,17 +615,86 @@ The modifiers handled by a controller are:</p>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>The nameof the action.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>display</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Whether to show the action in the toolbar.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>key</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The shortcut key.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>task</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">callback</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The callback executed by the action.</p></td>
         </tr>
 
     
     </tbody>
 </table>
+</dl>
 
-    
-
-    
-<dl class="details">
     
 
 	
@@ -540,8 +728,8 @@ The modifiers handled by a controller are:</p>
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="Controller.js.html">Controller.js</a>,
-				 <a href="Controller.js.html#sunlight-1-line-66">line 66</a>
+				<a href="UIBasic.js.html">UIBasic.js</a>,
+				 <a href="UIBasic.js.html#sunlight-1-line-5">line 5</a>
 			</li>
 		</ul>
 	</dd>
@@ -556,47 +744,215 @@ The modifiers handled by a controller are:</p>
 
 
     
+</dd>
 
-    
-
-    
-
-    
-
-    
-
-    
-    <h5>Returns:</h5>
-    
             
-<div class="param-desc">
-    <p>The modifier state.</p>
-</div>
+                
+<hr>
+<dt class="name" id="Action">
+    <h4 id="Action">Action</h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>A MenuEntry describes an entry for the menu.</p>
+    </div>
+    
+
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">Object</span>
 
 
 
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    <dl>
+
+<table class="props table table-striped">
+    <thead>
+    <tr>
         
-<span class="param-type">number</span>
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
 
 
 
-    </dd>
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The menu title.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>section</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The section title.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>html</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A HTML text.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>task</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">callback</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The callback executed by the action.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 </dl>
 
+    
 
-        
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="UIBasic.js.html">UIBasic.js</a>,
+				 <a href="UIBasic.js.html#sunlight-1-line-14">line 14</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
 
     
 </dd>
 
-        </dl>
-    
-
+            </dl>
     
 
     

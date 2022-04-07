@@ -13,6 +13,8 @@
 
 	<link type="text/css" rel="stylesheet" href="styles/site.cerulean.css">
 
+	<link type="text/css" rel="stylesheet" href="styles/openlime.css">
+
 </head>
 
 <body>
@@ -40,7 +42,14 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Annotation.html">Annotation</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Viewer.html">Viewer</a></li>
+					<li><a href="Annotation.html">Annotation</a></li><li><a href="BoundingBox.html">BoundingBox</a></li><li><a href="Cache.html">Cache</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Controller2D.html">Controller2D</a></li><li><a href="ControllerPanZoom.html">ControllerPanZoom</a></li><li><a href="EditorSvgAnnotation.html">EditorSvgAnnotation</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Skin.html">Skin</a></li><li><a href="Transform.html">Transform</a></li><li><a href="UIBasic.html">UIBasic</a></li><li><a href="UIDialog.html">UIDialog</a></li><li><a href="Viewer.html">Viewer</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Camera.html#event:update">Camera#event:update</a></li><li><a href="Canvas.html#event:ready">Canvas#event:ready</a></li><li><a href="Canvas.html#event:update">Canvas#event:update</a></li><li><a href="Canvas.html#event:updateSize">Canvas#event:updateSize</a></li><li><a href="Layer.html#event:ready">Layer#event:ready</a></li><li><a href="Layer.html#event:update">Layer#event:update</a></li><li><a href="Layout.html#event:ready">Layout#event:ready</a></li><li><a href="Layout.html#event:updateSize">Layout#event:updateSize</a></li><li><a href="UIDialog.html#event:closed">UIDialog#event:closed</a></li>
 				</ul>
 			</li>
 			
@@ -48,6 +57,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Howto<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-getting-started.html">Getting started with OpenLIME</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#crudCallback">crudCallback</a></li><li><a href="global.html#simplify">simplify</a></li><li><a href="global.html#smooth">smooth</a></li><li><a href="global.html#smoothToPath">smoothToPath</a></li>
 				</ul>
 			</li>
 			
@@ -88,23 +104,26 @@
 import { Layer } from './Layer.js'
 
 /**
- * SVG or OpenGL polygons/lines/points annotation layer
- * @param {object} options
- * * *svgURL*: url for the svg containing the annotations
- * * *svgXML*: svg string containing the annotatiosn
- * * *geometry*: TODO: should contain the areas/lines/points for OpenGL rendering
- * * *style*: css style for the annotation elements (shadow dom allows css to apply only to this layer)
- * * *annotations*: collection of annotations info: each annotations is id: { label, svg (optional), data (custom data) (TODO)
+ * An annotation layer is a layer used to display decorations (text, graphics elements, glyphs, etc...) on top of other layers.
+ * Its purpose is to provide additional information useful for the interpretation of the underlying layers.
+ * An object literal with `options` can be specified.
+ * 
+ * Here you will find a tutorial to learn how to build a client-server architecture to manage annotations in OpenLIME. //FIXME
+ * 
+ * Extends {@link Layer}.
  */
-
-
 class LayerAnnotation extends Layer {
+	/**
+	 * Instantiates a LayerAnnotation object.
+	 * @param {Object} [options] An object literal with options that inherits from {@link Layer}.
+	 * @param {string} options.style Properties to style annotations.
+ 	 * @param {(string|Array)} options.annotations The URL of the annotation data (JSON file or HTTP GET Request to an annotation server) or an array of annotations.
+	 */
 	constructor(options) {
 		options = Object.assign({
 			// geometry: null,  //unused, might want to store here the quads/shapes for opengl rendering
-			style: null,    //straightforward for svg annotations, to be defined oro opengl rendering
+			style: null,    //straightforward for svg annotations, to be defined or opengl rendering
 			annotations: [],
-			hoverable: false, //display info about annotation on mousehover.
 			selected: new Set,
 			overlay: true,
 			annotationsListEntry: null, //TODO: horrible name for the interface list of annotations
@@ -119,6 +138,7 @@ class LayerAnnotation extends Layer {
 		}
 	}
 
+	/** @ignore */
 	async loadAnnotations(url) {
 		var response = await fetch(url);
 		if(!response.ok) {
@@ -144,7 +164,7 @@ class LayerAnnotation extends Layer {
 		this.emit('loaded');
 	}
 
-
+	/** @ignore */
 	newAnnotation(annotation, selected = true) {
 		if(!annotation)
 			annotation = new Annotation();
@@ -163,7 +183,7 @@ class LayerAnnotation extends Layer {
 		return annotation;
 	}
 
-
+	/** @ignore */
 	annotationsEntry() {
 		return this.annotationsListEntry =  {
 			html: '',
@@ -177,6 +197,7 @@ class LayerAnnotation extends Layer {
 		}
 	}
 
+	/** @ignore */
 	createAnnotationsList() {
 		let html ='';
 		for(let a of this.annotations) {
@@ -206,6 +227,7 @@ class LayerAnnotation extends Layer {
 		});
 	}
 
+	/** @ignore */
 	createAnnotationEntry(a) {
 		return `&lt;a href="#" data-annotation="${a.id}" class="openlime-entry ${a.visible == 0? 'hidden':''}">${a.label || ''}
 			&lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="openlime-eye">&lt;path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z">&lt;/path>&lt;circle cx="12" cy="12" r="3">&lt;/circle>&lt;/svg>
@@ -213,6 +235,11 @@ class LayerAnnotation extends Layer {
 			&lt;/a>`;
 	}
 
+	/**
+	 * Gets an annotation by its `id`
+	 * @param {string} id 
+	 * @returns {Annotation} The annotation.
+	 */
 	getAnnotationById(id) {
 		for(const anno of this.annotations)
 			if(anno.id == id)
@@ -220,11 +247,17 @@ class LayerAnnotation extends Layer {
 		return null;
 	}
 
+	/** @ignore */
 	clearSelected() {
 		this.annotationsListEntry.element.parentElement.querySelectorAll(`[data-annotation]`).forEach((e) => e.classList.remove('selected'));
 		this.selected.clear();
 	}
-	//set selected class for annotation
+
+	/**
+	 * Selects/deselects an annotation
+	 * @param {Annotation} anno The annotation.
+	 * @param {bool} on=true Whether to select the annotation.
+	 */
 	setSelected(anno, on = true) {
 		this.annotationsListEntry.element.parentElement.querySelector(`[data-annotation="${anno.id}"]`).classList.toggle('selected', on);
 		if(on)

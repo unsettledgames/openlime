@@ -13,6 +13,8 @@
 
 	<link type="text/css" rel="stylesheet" href="styles/site.cerulean.css">
 
+	<link type="text/css" rel="stylesheet" href="styles/openlime.css">
+
 </head>
 
 <body>
@@ -40,7 +42,14 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Annotation.html">Annotation</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Viewer.html">Viewer</a></li>
+					<li><a href="Annotation.html">Annotation</a></li><li><a href="BoundingBox.html">BoundingBox</a></li><li><a href="Cache.html">Cache</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Controller2D.html">Controller2D</a></li><li><a href="ControllerPanZoom.html">ControllerPanZoom</a></li><li><a href="EditorSvgAnnotation.html">EditorSvgAnnotation</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Skin.html">Skin</a></li><li><a href="Transform.html">Transform</a></li><li><a href="UIBasic.html">UIBasic</a></li><li><a href="UIDialog.html">UIDialog</a></li><li><a href="Viewer.html">Viewer</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Camera.html#event:update">Camera#event:update</a></li><li><a href="Canvas.html#event:ready">Canvas#event:ready</a></li><li><a href="Canvas.html#event:update">Canvas#event:update</a></li><li><a href="Canvas.html#event:updateSize">Canvas#event:updateSize</a></li><li><a href="Layer.html#event:ready">Layer#event:ready</a></li><li><a href="Layer.html#event:update">Layer#event:update</a></li><li><a href="Layout.html#event:ready">Layout#event:ready</a></li><li><a href="Layout.html#event:updateSize">Layout#event:updateSize</a></li><li><a href="UIDialog.html#event:closed">UIDialog#event:closed</a></li>
 				</ul>
 			</li>
 			
@@ -48,6 +57,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Howto<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-getting-started.html">Getting started with OpenLIME</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#crudCallback">crudCallback</a></li><li><a href="global.html#simplify">simplify</a></li><li><a href="global.html#smooth">smooth</a></li><li><a href="global.html#smoothToPath">smoothToPath</a></li>
 				</ul>
 			</li>
 			
@@ -88,16 +104,11 @@
         Raster
         </h2>
         
-            <div class="class-description"><p>Raster is a providers of images and planes of coefficies.
-It support all files format supported by browser and a set of tiled formats.</p>
-<p>Layout can be:</p>
+            <div class="class-description"><p>Raster is a provider of image and/or plane of coefficients.
+It support all file formats supported by <a href="Layout.html">Layout</a>.</p>
+<p>An object literal with Raster <code>options</code> can be specified.</p>
 <ul>
-<li>image: a single image (.jpg, .png etc.)</li>
-<li>google: there is no config file, so layout, suffix is mandatory if not .jpg,  and url is the base folder of the tiles.</li>
-<li>deepzoom: requires only url, can be autodetected from the extension (.dzi)</li>
-<li>zoomify: requires url, can be autodetected, from the ImageProperties.xml, suffix is required if not .jpg</li>
-<li>iip: requires url, can be autodetected from the url</li>
-<li>iiif: layout is mandatory, url should point to base url {scheme}://{server}{/prefix}/{identifier}</li>
+<li>@param {Object} [options] An object literal describing the raster content.</li>
 </ul></div>
         
     
@@ -110,7 +121,7 @@ It support all files format supported by browser and a set of tiled formats.</p>
         
 <hr>
 <dt>
-    <h4 class="name" id="Raster"><span class="type-signature"></span>new Raster(id, url, options)</h4>
+    <h4 class="name" id="Raster"><span class="type-signature"></span>new Raster()</h4>
     
     
 </dt>
@@ -139,6 +150,8 @@ It support all files format supported by browser and a set of tiled formats.</p>
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -149,13 +162,13 @@ It support all files format supported by browser and a set of tiled formats.</p>
 
         <tr>
             
-                <td class="name"><code>id</code></td>
+                <td class="name"><code>options.format</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type"><a href="Raster.html#Format">Raster#Format</a></span>
 
 
 
@@ -165,60 +178,14 @@ It support all files format supported by browser and a set of tiled formats.</p>
             
 
             
-
-            <td class="description last"><p>an unique id for each raster</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>url</code></td>
-            
-
-            <td class="type">
-            
+                <td class="default">
                 
-<span class="param-type">url</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>of the content</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
+                    'vec3'
                 
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
+                </td>
             
 
-            
-
-            <td class="description last"><ul>
-<li><em>type</em>: vec3 (default value) for standard images, vec4 when including alpha, vec2, float other purpouses.</li>
-<li><em>attribute</em>: &lt;coeff|kd|ks|gloss|normals|dem&gt; meaning of the image.</li>
-<li><em>colorSpace</em>: &lt;linear|srgb&gt; colorspace used for rendering.</li>
-</ul></td>
+            <td class="description last"><p>The color format of the image.</p></td>
         </tr>
 
     
@@ -263,7 +230,7 @@ It support all files format supported by browser and a set of tiled formats.</p>
 		<ul class="dummy">
 			<li>
 				<a href="Raster.js.html">Raster.js</a>,
-				 <a href="Raster.js.html#sunlight-1-line-21">line 21</a>
+				 <a href="Raster.js.html#sunlight-1-line-18">line 18</a>
 			</li>
 		</ul>
 	</dd>
@@ -308,7 +275,293 @@ It support all files format supported by browser and a set of tiled formats.</p>
     
 
     
+        <h3 class="subsection-title">Methods</h3>
 
+        <dl>
+            
+<hr>
+<dt>
+    <h4 class="name" id="loadImage"><span class="type-signature">&lt;async> </span>loadImage(tile, gl)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Gets a tile.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>tile</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#Tile">Tile</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A tile.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>gl</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">WebGLRenderingContext</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The WebGL rendering context .</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Raster.js.html">Raster.js</a>,
+				 <a href="Raster.js.html#sunlight-1-line-35">line 35</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>A pair (tex,size).</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">'[tex, size]'</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        </dl>
+    
+
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        <dl>
+                
+<hr>
+<dt class="name" id="Format">
+    <h4 id="Format">Format</h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>An Raster Format describes the way that the images in textures and renderbuffers store their data.</p>
+<ul>
+<li>'vec3' format must be specified if the image is RGB (without alpha).</li>
+<li>'vec4' is related to RGBA images.</li>
+<li>'float' is for file containg coefficients.</li>
+</ul>
+    </div>
+    
+
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">'vec3'</span>
+|
+
+<span class="param-type">'vec4'</span>
+|
+
+<span class="param-type">'float'</span>
+
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Raster.js.html">Raster.js</a>,
+				 <a href="Raster.js.html#sunlight-1-line-1">line 1</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
+            </dl>
     
 
     

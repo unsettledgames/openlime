@@ -13,6 +13,8 @@
 
 	<link type="text/css" rel="stylesheet" href="styles/site.cerulean.css">
 
+	<link type="text/css" rel="stylesheet" href="styles/openlime.css">
+
 </head>
 
 <body>
@@ -40,7 +42,14 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Annotation.html">Annotation</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Viewer.html">Viewer</a></li>
+					<li><a href="Annotation.html">Annotation</a></li><li><a href="BoundingBox.html">BoundingBox</a></li><li><a href="Cache.html">Cache</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Controller2D.html">Controller2D</a></li><li><a href="ControllerPanZoom.html">ControllerPanZoom</a></li><li><a href="EditorSvgAnnotation.html">EditorSvgAnnotation</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Skin.html">Skin</a></li><li><a href="Transform.html">Transform</a></li><li><a href="UIBasic.html">UIBasic</a></li><li><a href="UIDialog.html">UIDialog</a></li><li><a href="Viewer.html">Viewer</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Camera.html#event:update">Camera#event:update</a></li><li><a href="Canvas.html#event:ready">Canvas#event:ready</a></li><li><a href="Canvas.html#event:update">Canvas#event:update</a></li><li><a href="Canvas.html#event:updateSize">Canvas#event:updateSize</a></li><li><a href="Layer.html#event:ready">Layer#event:ready</a></li><li><a href="Layer.html#event:update">Layer#event:update</a></li><li><a href="Layout.html#event:ready">Layout#event:ready</a></li><li><a href="Layout.html#event:updateSize">Layout#event:updateSize</a></li><li><a href="UIDialog.html#event:closed">UIDialog#event:closed</a></li>
 				</ul>
 			</li>
 			
@@ -48,6 +57,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Howto<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-getting-started.html">Getting started with OpenLIME</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#crudCallback">crudCallback</a></li><li><a href="global.html#simplify">simplify</a></li><li><a href="global.html#smooth">smooth</a></li><li><a href="global.html#smoothToPath">smoothToPath</a></li>
 				</ul>
 			</li>
 			
@@ -84,12 +100,32 @@
 <section>
     <article>
         <pre
-            class="sunlight-highlight-javascript linenums">
-import { Layer }  from './Layer.js'
+            class="sunlight-highlight-javascript linenums">import { Layer }  from './Layer.js'
 
 /**
- * Combines other layers (using a framebuffer) using a shader. Lens is an example. Extends {@link Layer}.
- * @param {options} options Same as {@link Layer}, but url and layout are required.
+ * Combines other layers (in the framebuffer) using a custom shader. {@link LayerLens} is an example.
+ * The class LayerImage can also be instantiated via the Layer parent class and `options.type='combiner'`.
+ * 
+ * Extends {@link Layer}.
+ * @param {options} options Same as {@link Layer}, but `options.layers` are required
+ * @example
+ * // Instantiate the LayerCombiner class and set the two inputs (layer0 and layer1)
+ * const combiner = new OpenLIME.Layer({
+ *     type: 'combiner',
+ *     visible: true,
+ *     layers: [layer0, layer1]
+ * });
+ * 
+ * // Instantiate the ShaderCombiner class (a custom shader) and select 'diff' as default mode (for visualization purposes)
+ * const shader = new OpenLIME.ShaderCombiner();
+ * shader.mode = 'diff';
+ *
+ * // Assign the newly created shader to the combiner (labelling it 'standard') and enable it
+ * combiner.shaders = { 'standard': shader };
+ * combiner.setShader('standard');
+ *
+ * // Add the combiner to the canvas
+ * lime.addLayer('combiner', combiner);
  */
 class LayerCombiner extends Layer {
 	constructor(options) {
@@ -113,7 +149,7 @@ class LayerCombiner extends Layer {
 		this.status = 'ready';
 	}
 
-
+	/** @ignore */
 	draw(transform, viewport) {
 		for(let layer of this.layers)
 			if(layer.status != 'ready')
@@ -136,7 +172,6 @@ class LayerCombiner extends Layer {
 		var b = [0, 0, 0, 0];
 		gl.clearColor(b[0], b[1], b[2], b[3]);
 
-
 //TODO optimize: render to texture ONLY if some parameters change!
 //provider di textures... max memory and reference counting.
 
@@ -147,7 +182,6 @@ class LayerCombiner extends Layer {
 			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		}
 
-
 		this.prepareWebGL();
 
 		for(let i = 0; i &lt; this.layers.length; i++) {
@@ -156,15 +190,13 @@ class LayerCombiner extends Layer {
 			gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
 		}
 
-
-
 		this.updateTileBuffers(
 			new Float32Array([-1, -1, 0,  -1, 1, 0,  1, 1, 0,  1, -1, 0]), 
 			new Float32Array([ 0,  0,      0, 1,     1, 1,     1,  0]));
 		gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT,0);
 	}
 
-	
+	/** @ignore */
 	createFramebuffers() {
 		let gl = this.gl;
 		for(let i = 0; i &lt; this.layers.length; i++) {
@@ -194,10 +226,13 @@ class LayerCombiner extends Layer {
 			this.framebuffers[i] = framebuffer;
 		}
 	}
+
 	//TODO release textures and framebuffers
+	/** @ignore */
 	deleteFramebuffers() {
 	}
 
+	/** @ignore */
 	boundingBox() {
 		// Combiner ask the combination of all its children boxes
 		// keeping the hidden, because they could be hidden, but revealed by the combiner
@@ -209,6 +244,7 @@ class LayerCombiner extends Layer {
 		return result;
 	}
 	
+	/** @ignore */
 	scale() {
 		//Combiner ask the scale of all its children
 		//keeping the hidden, because they could be hidden, but revealed by the combiner

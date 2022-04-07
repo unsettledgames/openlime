@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Class: LayerCombiner</title>
+	<title>OpenLIME Class: Cache</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -95,18 +95,16 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: LayerCombiner</h1>
+	<h1 class="page-title">Class: Cache</h1>
 <section>
 
 <header>
     
         <h2>
-        LayerCombiner
+        Cache
         </h2>
         
-            <div class="class-description"><p>Combines other layers (in the framebuffer) using a custom shader. <a href="LayerLens.html">LayerLens</a> is an example.
-The class LayerImage can also be instantiated via the Layer parent class and <code>options.type='combiner'</code>.</p>
-<p>Extends <a href="Layer.html">Layer</a>.</p></div>
+            <div class="class-description"><p>The singleton class <strong>Cache</strong> implements a cache for faster retrieval of the tiles required by layers.</p></div>
         
     
 </header>
@@ -118,12 +116,16 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
         
 <hr>
 <dt>
-    <h4 class="name" id="LayerCombiner"><span class="type-signature"></span>new LayerCombiner(options)</h4>
+    <h4 class="name" id="Cache"><span class="type-signature"></span>new Cache( [options])</h4>
     
     
 </dt>
 <dd>
 
+    
+    <div class="description">
+        <p>Instantiates a Cache object. Tiles to be fetched are stored in an ordered <code>queue</code> in {Layer}.</p>
+    </div>
     
 
     
@@ -145,6 +147,8 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
         <th>Type</th>
 
         
+        <th>Argument</th>
+        
 
         
 
@@ -163,7 +167,62 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
             <td class="type">
             
                 
-<span class="param-type">options</span>
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>An object literal to define cache parameters.</p>
+                <h6 class="method-params-label method-subparams-label">Properties</h6>
+                
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>capacity</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
 
 
 
@@ -173,8 +232,51 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
             
 
             
+                <td class="default">
+                
+                    536870912
+                
+                </td>
+            
 
-            <td class="description last"><p>Same as <a href="Layer.html">Layer</a>, but <code>options.layers</code> are required</p></td>
+            <td class="description last"><p>The total cache capacity (in bytes).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxRequest</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    6
+                
+                </td>
+            
+
+            <td class="description last"><p>Max number of concurrent HTTP requests. Most common browsers allow six connections per domain.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -218,8 +320,8 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="LayerCombiner.js.html">LayerCombiner.js</a>,
-				 <a href="LayerCombiner.js.html#sunlight-1-line-28">line 28</a>
+				<a href="Cache.js.html">Cache.js</a>,
+				 <a href="Cache.js.html#sunlight-1-line-121">line 121</a>
 			</li>
 		</ul>
 	</dd>
@@ -246,28 +348,6 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
     
 
     
-        <h5>Example</h5>
-        
-    <pre class="sunlight-highlight-javascript">// Instantiate the LayerCombiner class and set the two inputs (layer0 and layer1)
-const combiner = new OpenLIME.Layer({
-    type: &#x27;combiner&#x27;,
-    visible: true,
-    layers: [layer0, layer1]
-});
-
-// Instantiate the ShaderCombiner class (a custom shader) and select &#x27;diff&#x27; as default mode (for visualization purposes)
-const shader = new OpenLIME.ShaderCombiner();
-shader.mode = &#x27;diff&#x27;;
-
-// Assign the newly created shader to the combiner (labelling it &#x27;standard&#x27;) and enable it
-combiner.shaders = { &#x27;standard&#x27;: shader };
-combiner.setShader(&#x27;standard&#x27;);
-
-// Add the combiner to the canvas
-lime.addLayer(&#x27;combiner&#x27;, combiner);</pre>
-
-
-    
 </dd>
 
     
@@ -285,6 +365,287 @@ lime.addLayer(&#x27;combiner&#x27;, combiner);</pre>
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<hr>
+<dt>
+    <h4 class="name" id="flushLayer"><span class="type-signature"></span>flushLayer(layer)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Flushes all tiles for a <code>layer</code>.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>layer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Layer.html">Layer</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A layer.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Cache.js.html">Cache.js</a>,
+				 <a href="Cache.js.html#sunlight-1-line-131">line 131</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="setCandidates"><span class="type-signature"></span>setCandidates(layer)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Determines which tiles of a given <code>layer</code> are candidates to be downloaded.
+Cleans up the cache and schedules the web data fetch.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>layer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Layer.html">Layer</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A layer.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Cache.js.html">Cache.js</a>,
+				 <a href="Cache.js.html#sunlight-1-line-139">line 139</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        </dl>
     
 
     

@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Class: LayerCombiner</title>
+	<title>OpenLIME Class: EditorSvgAnnotation</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -95,18 +95,34 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: LayerCombiner</h1>
+	<h1 class="page-title">Class: EditorSvgAnnotation</h1>
 <section>
 
 <header>
     
         <h2>
-        LayerCombiner
+        EditorSvgAnnotation
         </h2>
         
-            <div class="class-description"><p>Combines other layers (in the framebuffer) using a custom shader. <a href="LayerLens.html">LayerLens</a> is an example.
-The class LayerImage can also be instantiated via the Layer parent class and <code>options.type='combiner'</code>.</p>
-<p>Extends <a href="Layer.html">Layer</a>.</p></div>
+            <div class="class-description"><p><strong>EditorSvgAnnotation</strong> enables the <a href="UIBasic.html">UIBasic</a> interface to edit (create/update/delete) SVG annotations.
+This class is a mere utility that acts as an adapter between the annotation database and the OpenLIME system.</p>
+<p>Here you will find a tutorial to learn how to use the SVG annotation editor. //FIXME</p>
+<p>For the experienced developer this class can be used as an example to design more complex editors.</p>
+<p>In the following example an <strong>EditorSvgAnnotation</strong> is instatiated and connected to the annotation database
+through three callbacks implementing database operations (create/update/delete).</p>
+<pre class="prettyprint source"><code>// Creates an annotation layer and add it to the canvans
+const anno = new OpenLIME.Layer(aOptions);
+lime.addLayer('anno', anno);
+
+// Creates a SVG annotation Editor
+const editor = new OpenLIME.EditorSvgAnnotation(lime, anno, {
+         viewer: lime,
+         classes: classParam
+});
+editor.createCallback = (anno) => { console.log(&quot;Created annotation: &quot;, anno); processRequest(anno, 'create'); return true; };
+editor.updateCallback = (anno) => { console.log(&quot;Updated annotation: &quot;, anno); processRequest(anno, 'update'); return true; };
+editor.deleteCallback = (anno) => { console.log(&quot;Deleted annotation: &quot;, anno); processRequest(anno, 'delete'); return true; };
+</code></pre></div>
         
     
 </header>
@@ -118,12 +134,16 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
         
 <hr>
 <dt>
-    <h4 class="name" id="LayerCombiner"><span class="type-signature"></span>new LayerCombiner(options)</h4>
+    <h4 class="name" id="EditorSvgAnnotation"><span class="type-signature"></span>new EditorSvgAnnotation(viewer, layer [, options])</h4>
     
     
 </dt>
 <dd>
 
+    
+    <div class="description">
+        <p>Instatiates a EditorSvgAnnotation object.</p>
+    </div>
     
 
     
@@ -134,6 +154,125 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
     
         <h5>Parameters:</h5>
         
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Argument</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>viewer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Viewer.html">Viewer</a></span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The OpenLIME viewer.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>layer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The annotation layer on which to operate.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>An object literal with SVG editor parameters.</p>
+                <h6 class="method-params-label method-subparams-label">Properties</h6>
+                
 
 <table class="params table table-striped">
     <thead>
@@ -157,13 +296,13 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>classes</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">options</span>
+<span class="param-type"><a href="global.html#AnnotationClasses">AnnotationClasses</a></span>
 
 
 
@@ -174,7 +313,86 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
 
             
 
-            <td class="description last"><p>Same as <a href="Layer.html">Layer</a>, but <code>options.layers</code> are required</p></td>
+            <td class="description last"><p>An object literal definying colors and labels of the annotation classes.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>createCallback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#crudCallback">crudCallback</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The callback to implement annotation creation.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>updateCallback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#crudCallback">crudCallback</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The callback to implement annotation update.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>deleteCallback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#crudCallback">crudCallback</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The callback to implement annotation deletion.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -218,8 +436,8 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="LayerCombiner.js.html">LayerCombiner.js</a>,
-				 <a href="LayerCombiner.js.html#sunlight-1-line-28">line 28</a>
+				<a href="EditorSvgAnnotation.js.html">EditorSvgAnnotation.js</a>,
+				 <a href="EditorSvgAnnotation.js.html#sunlight-1-line-36">line 36</a>
 			</li>
 		</ul>
 	</dd>
@@ -244,28 +462,6 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
     
 
     
-
-    
-        <h5>Example</h5>
-        
-    <pre class="sunlight-highlight-javascript">// Instantiate the LayerCombiner class and set the two inputs (layer0 and layer1)
-const combiner = new OpenLIME.Layer({
-    type: &#x27;combiner&#x27;,
-    visible: true,
-    layers: [layer0, layer1]
-});
-
-// Instantiate the ShaderCombiner class (a custom shader) and select &#x27;diff&#x27; as default mode (for visualization purposes)
-const shader = new OpenLIME.ShaderCombiner();
-shader.mode = &#x27;diff&#x27;;
-
-// Assign the newly created shader to the combiner (labelling it &#x27;standard&#x27;) and enable it
-combiner.shaders = { &#x27;standard&#x27;: shader };
-combiner.setShader(&#x27;standard&#x27;);
-
-// Add the combiner to the canvas
-lime.addLayer(&#x27;combiner&#x27;, combiner);</pre>
-
 
     
 </dd>

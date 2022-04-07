@@ -13,6 +13,8 @@
 
 	<link type="text/css" rel="stylesheet" href="styles/site.cerulean.css">
 
+	<link type="text/css" rel="stylesheet" href="styles/openlime.css">
+
 </head>
 
 <body>
@@ -40,7 +42,14 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Annotation.html">Annotation</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Viewer.html">Viewer</a></li>
+					<li><a href="Annotation.html">Annotation</a></li><li><a href="BoundingBox.html">BoundingBox</a></li><li><a href="Cache.html">Cache</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Controller2D.html">Controller2D</a></li><li><a href="ControllerPanZoom.html">ControllerPanZoom</a></li><li><a href="EditorSvgAnnotation.html">EditorSvgAnnotation</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Skin.html">Skin</a></li><li><a href="Transform.html">Transform</a></li><li><a href="UIBasic.html">UIBasic</a></li><li><a href="UIDialog.html">UIDialog</a></li><li><a href="Viewer.html">Viewer</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Camera.html#event:update">Camera#event:update</a></li><li><a href="Canvas.html#event:ready">Canvas#event:ready</a></li><li><a href="Canvas.html#event:update">Canvas#event:update</a></li><li><a href="Canvas.html#event:updateSize">Canvas#event:updateSize</a></li><li><a href="Layer.html#event:ready">Layer#event:ready</a></li><li><a href="Layer.html#event:update">Layer#event:update</a></li><li><a href="Layout.html#event:ready">Layout#event:ready</a></li><li><a href="Layout.html#event:updateSize">Layout#event:updateSize</a></li><li><a href="UIDialog.html#event:closed">UIDialog#event:closed</a></li>
 				</ul>
 			</li>
 			
@@ -48,6 +57,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Howto<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-getting-started.html">Getting started with OpenLIME</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#crudCallback">crudCallback</a></li><li><a href="global.html#simplify">simplify</a></li><li><a href="global.html#smooth">smooth</a></li><li><a href="global.html#smoothToPath">smoothToPath</a></li>
 				</ul>
 			</li>
 			
@@ -88,6 +104,10 @@
         Canvas
         </h2>
         
+            <div class="class-description"><p>Creates the WebGL context for the <code>canvas</code>. It stores information related to the <code>overlay</code> DOM element and the <code>camera</code> of the scene.
+Signals are triggered in case of scene modifications.
+Additionally, an object literal with Canvas <code>options</code> can be specified.</p></div>
+        
     
 </header>
 
@@ -98,7 +118,7 @@
         
 <hr>
 <dt>
-    <h4 class="name" id="Canvas"><span class="type-signature"></span>new Canvas(canvas, overlay, camera, options)</h4>
+    <h4 class="name" id="Canvas"><span class="type-signature"></span>new Canvas(canvas, overlay, camera [, options])</h4>
     
     
 </dt>
@@ -125,6 +145,8 @@
         <th>Type</th>
 
         
+        <th>Argument</th>
+        
 
         
 
@@ -143,10 +165,10 @@
             <td class="type">
             
                 
-<span class="param-type">Element</span>
+<span class="param-type">element</span>
 |
 
-<span class="param-type">String</span>
+<span class="param-type">string</span>
 
 
 
@@ -154,10 +176,18 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>dom element or query selector for a <canvas> element.</p></td>
+            <td class="description last"><p>DOM element or selector for a <code>&lt;canvas&gt;</code>.</p></td>
         </tr>
 
     
@@ -170,7 +200,10 @@
             <td class="type">
             
                 
-<span class="param-type">Element</span>
+<span class="param-type">element</span>
+|
+
+<span class="param-type">string</span>
 
 
 
@@ -178,10 +211,18 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>DIV containing annotations, TODO: at the moment it is just passed to the layers (might need refactoring)</p></td>
+            <td class="description last"><p>DOM element or selector for overlay decorations (i.e. annotations, glyphs, etc...)</p></td>
         </tr>
 
     
@@ -202,10 +243,18 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>(see <a href="Camera.html">Camera</a>)</p></td>
+            <td class="description last"><p>The scene's camera.</p></td>
         </tr>
 
     
@@ -226,15 +275,107 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><ul>
-<li><em>layers</em>: Object specifies layers (see. <a href="Layer.html">Layer</a>)</li>
-<li><em>preserveDrawingBuffer</em> needed for screenshots (otherwise is just a performance penalty)</li>
-</ul>
-<p><strong>Signals:</strong>
-Emits <em>&quot;update&quot;</em> event when a layer updates or is added or removed.</p></td>
+            <td class="description last"><p>An object literal.</p>
+                <h6 class="method-params-label method-subparams-label">Properties</h6>
+                
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>layers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Object specifies layers (see. <a href="Layer.html">Layer</a>)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>preserveDrawingBuffer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last"><p>Whether to preserve the buffers until manually cleared or overwritten. Needed for screenshots
+(otherwise is just a performance penalty).</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -279,7 +420,7 @@ Emits <em>&quot;update&quot;</em> event when a layer updates or is added or remo
 		<ul class="dummy">
 			<li>
 				<a href="Canvas.js.html">Canvas.js</a>,
-				 <a href="Canvas.js.html#sunlight-1-line-18">line 18</a>
+				 <a href="Canvas.js.html#sunlight-1-line-19">line 19</a>
 			</li>
 		</ul>
 	</dd>
@@ -330,7 +471,7 @@ Emits <em>&quot;update&quot;</em> event when a layer updates or is added or remo
             
 <hr>
 <dt>
-    <h4 class="name" id="prefetch"><span class="type-signature"></span>prefetch(transform)</h4>
+    <h4 class="name" id="addLayer"><span class="type-signature"></span>addLayer(id, layer)</h4>
     
     
 </dt>
@@ -338,7 +479,7 @@ Emits <em>&quot;update&quot;</em> event when a layer updates or is added or remo
 
     
     <div class="description">
-        <p>This function have each layer to check which tiles are needed and schedule them for download.</p>
+        <p>Adds the given layer to the Canvas and connects the layer's events to it.</p>
     </div>
     
 
@@ -373,13 +514,13 @@ Emits <em>&quot;update&quot;</em> event when a layer updates or is added or remo
 
         <tr>
             
-                <td class="name"><code>transform</code></td>
+                <td class="name"><code>id</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type">string</span>
 
 
 
@@ -390,7 +531,31 @@ Emits <em>&quot;update&quot;</em> event when a layer updates or is added or remo
 
             
 
-            <td class="description last"><p>is the camera position (layer will combine with local transform).</p></td>
+            <td class="description last"><p>A label to identify the layer.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>layer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Layer.html">Layer</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An OpenLIME Layer object.</p></td>
         </tr>
 
     
@@ -435,7 +600,426 @@ Emits <em>&quot;update&quot;</em> event when a layer updates or is added or remo
 		<ul class="dummy">
 			<li>
 				<a href="Canvas.js.html">Canvas.js</a>,
-				 <a href="Canvas.js.html#sunlight-1-line-177">line 177</a>
+				 <a href="Canvas.js.html#sunlight-1-line-130">line 130</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="removeLayer"><span class="type-signature"></span>removeLayer(layer)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Remove the given layer from the Canvas</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>layer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Layer.html">Layer</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An OpenLIME Layer object.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Canvas.js.html">Canvas.js</a>,
+				 <a href="Canvas.js.html#sunlight-1-line-164">line 164</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">let layer0 = new Layer(options);
+canvas.addLayer(&#x27;kdmap&#x27;, layer0);
+...
+canvas.removeLayer(layer0);</pre>
+
+
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+        <h3 class="subsection-title">Events</h3>
+
+        <dl>
+            
+<hr>
+<dt>
+    <h4 class="name" id="event:ready">ready</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>The event is fired when all the layers are ready (i.e. initialized and with data ready to be displayed).</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Canvas.js.html">Canvas.js</a>,
+				 <a href="Canvas.js.html#sunlight-1-line-136">line 136</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="event:update">update</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>The event is fired if a layer is updated, added or removed.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Canvas.js.html">Canvas.js</a>,
+				 <a href="Canvas.js.html#sunlight-1-line-131">line 131</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="event:updateSize">updateSize</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>The event is fired if a layout changes its size or position (the event forces the re-computation of the layer bounding boxes).</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Canvas.js.html">Canvas.js</a>,
+				 <a href="Canvas.js.html#sunlight-1-line-174">line 174</a>
 			</li>
 		</ul>
 	</dd>
@@ -465,10 +1049,6 @@ Emits <em>&quot;update&quot;</em> event when a layer updates or is added or remo
 </dd>
 
         </dl>
-    
-
-    
-
     
 </article>
 

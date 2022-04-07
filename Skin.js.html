@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Class: LayerCombiner</title>
+	<title>OpenLIME Source: Skin.js</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -90,209 +90,91 @@
 <div class="row">
 
 	
-	<div class="col-md-8">
+	<div class="col-md-12">
 	
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: LayerCombiner</h1>
+		<h1 class="page-title">Source: Skin.js</h1>
+    
 <section>
-
-<header>
-    
-        <h2>
-        LayerCombiner
-        </h2>
-        
-            <div class="class-description"><p>Combines other layers (in the framebuffer) using a custom shader. <a href="LayerLens.html">LayerLens</a> is an example.
-The class LayerImage can also be instantiated via the Layer parent class and <code>options.type='combiner'</code>.</p>
-<p>Extends <a href="Layer.html">Layer</a>.</p></div>
-        
-    
-</header>
-
-
-<article>
-    <div class="container-overview">
-    
-        
-<hr>
-<dt>
-    <h4 class="name" id="LayerCombiner"><span class="type-signature"></span>new LayerCombiner(options)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">options</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Same as <a href="Layer.html">Layer</a>, but <code>options.layers</code> are required</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
-	<dd class="tag-source">
-		<ul class="dummy">
-			<li>
-				<a href="LayerCombiner.js.html">LayerCombiner.js</a>,
-				 <a href="LayerCombiner.js.html#sunlight-1-line-28">line 28</a>
-			</li>
-		</ul>
-	</dd>
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h5>Example</h5>
-        
-    <pre class="sunlight-highlight-javascript">// Instantiate the LayerCombiner class and set the two inputs (layer0 and layer1)
-const combiner = new OpenLIME.Layer({
-    type: &#x27;combiner&#x27;,
-    visible: true,
-    layers: [layer0, layer1]
-});
-
-// Instantiate the ShaderCombiner class (a custom shader) and select &#x27;diff&#x27; as default mode (for visualization purposes)
-const shader = new OpenLIME.ShaderCombiner();
-shader.mode = &#x27;diff&#x27;;
-
-// Assign the newly created shader to the combiner (labelling it &#x27;standard&#x27;) and enable it
-combiner.shaders = { &#x27;standard&#x27;: shader };
-combiner.setShader(&#x27;standard&#x27;);
-
-// Add the combiner to the canvas
-lime.addLayer(&#x27;combiner&#x27;, combiner);</pre>
-
-
-    
-</dd>
-
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">
+let url = 'skin/skin.svg';
+let svg = null;
+let pad = 5;
+
+/**
+ * The static class **Skin** implements some utilities for handling the skin file.
+ * A skin file is a SVG file containing SVG icons that are used by **UIBasic*
+ * for customizing the visual appearance of the user interface (i.e., icons for buttons, menu, toolbar, dialog...).
+ * Each SVG drawing element must be tagged with a 'class' attribute  whose name must begin with *openlime-*:
+ * for instance, the HOME icon is a SVG element tagged with `class="openlime-home"`. 
+ */
+class Skin {
+	/**
+	 * Sets the URL of the SVG skin file. By default it is *'skin/skin.svg'*;
+	 * @param {string} u The URL of the SVG skin file.
+	 */
+	static setUrl(u) { url = u; }
+
+	/**
+	 * Loads the SVG skin file and converts it into a global DOM SVGElement ready for use in a web page.
+	 */
+	static async loadSvg() {
+		var response = await fetch(url);
+		if (!response.ok) {
+			throw Error("Failed loading " + url + ": " + response.statusText);
+			return;
+		}
+
+		let text = await response.text();
+		let parser = new DOMParser();
+		svg = parser.parseFromString(text, "image/svg+xml").documentElement;
+	}
+
+	/**
+	 * Gets the SVG element with a specific CSS `selector`.
+	 * @param {string} selector A CSS selector (e.g. a class name).
+	 * @returns {SVGElement} The SVGElement referenced by the selector.
+	 */
+	static async getElement(selector) {
+		if (!svg)
+			await Skin.loadSvg();
+		return svg.querySelector(selector).cloneNode(true);
+	}
+
+	/**
+	 * Appends the selected SVG icons to the `container`.
+	 * @param {HTMLElement} container A HTML DOM node.
+	 * @param {string} selector A CSS selector (e.g. a class name).
+	 * @returns {SVGElement} A pointer to the SVG icon referenced by the selector.
+	 */
+	static async appendIcon(container, selector) {
+		let element = await Skin.getElement(selector);
+
+		let icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		container.appendChild(icon);
+		icon.appendChild(element);
+		
+		let box = element.getBBox();
+
+		let tlist = element.transform.baseVal;
+		if (tlist.numberOfItems == 0)
+			tlist.appendItem(icon.createSVGTransform());
+		tlist.getItem(0).setTranslate(-box.x, -box.y);
+
+		icon.setAttribute('viewBox', `${-pad} ${-pad} ${box.width + 2*pad} ${box.height + 2*pad}`);
+		icon.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+		return icon;
+	}	
+}
+
+export { Skin }</pre>
+    </article>
 </section>
+
 
 
 
@@ -302,10 +184,6 @@ lime.addLayer(&#x27;combiner&#x27;, combiner);</pre>
 
 	<div class="clearfix"></div>
 
-	
-		<div class="col-md-3">
-			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
-		</div>
 	
 
 </div>

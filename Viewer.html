@@ -13,6 +13,8 @@
 
 	<link type="text/css" rel="stylesheet" href="styles/site.cerulean.css">
 
+	<link type="text/css" rel="stylesheet" href="styles/openlime.css">
+
 </head>
 
 <body>
@@ -40,7 +42,14 @@
 			<li class="dropdown">
 				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Annotation.html">Annotation</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Viewer.html">Viewer</a></li>
+					<li><a href="Annotation.html">Annotation</a></li><li><a href="BoundingBox.html">BoundingBox</a></li><li><a href="Cache.html">Cache</a></li><li><a href="Camera.html">Camera</a></li><li><a href="Canvas.html">Canvas</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Controller2D.html">Controller2D</a></li><li><a href="ControllerPanZoom.html">ControllerPanZoom</a></li><li><a href="EditorSvgAnnotation.html">EditorSvgAnnotation</a></li><li><a href="Layer.html">Layer</a></li><li><a href="LayerAnnotation.html">LayerAnnotation</a></li><li><a href="LayerBRDF.html">LayerBRDF</a></li><li><a href="LayerCombiner.html">LayerCombiner</a></li><li><a href="LayerImage.html">LayerImage</a></li><li><a href="LayerLens.html">LayerLens</a></li><li><a href="LayerRTI.html">LayerRTI</a></li><li><a href="LayerSvgAnnotation.html">LayerSvgAnnotation</a></li><li><a href="Layout.html">Layout</a></li><li><a href="module-OpenLIME-OpenLIME.html">OpenLIME~OpenLIME</a></li><li><a href="PointerManager.html">PointerManager</a></li><li><a href="Raster.html">Raster</a></li><li><a href="Shader.html">Shader</a></li><li><a href="ShaderBRDF.html">ShaderBRDF</a></li><li><a href="ShaderCombiner.html">ShaderCombiner</a></li><li><a href="ShaderRTI.html">ShaderRTI</a></li><li><a href="Skin.html">Skin</a></li><li><a href="Transform.html">Transform</a></li><li><a href="UIBasic.html">UIBasic</a></li><li><a href="UIDialog.html">UIDialog</a></li><li><a href="Viewer.html">Viewer</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="events.list.html" class="dropdown-toggle" data-toggle="dropdown">Events<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Camera.html#event:update">Camera#event:update</a></li><li><a href="Canvas.html#event:ready">Canvas#event:ready</a></li><li><a href="Canvas.html#event:update">Canvas#event:update</a></li><li><a href="Canvas.html#event:updateSize">Canvas#event:updateSize</a></li><li><a href="Layer.html#event:ready">Layer#event:ready</a></li><li><a href="Layer.html#event:update">Layer#event:update</a></li><li><a href="Layout.html#event:ready">Layout#event:ready</a></li><li><a href="Layout.html#event:updateSize">Layout#event:updateSize</a></li><li><a href="UIDialog.html#event:closed">UIDialog#event:closed</a></li>
 				</ul>
 			</li>
 			
@@ -48,6 +57,13 @@
 				<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Howto<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
 					<li><a href="tutorial-getting-started.html">Getting started with OpenLIME</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#crudCallback">crudCallback</a></li><li><a href="global.html#simplify">simplify</a></li><li><a href="global.html#smooth">smooth</a></li><li><a href="global.html#smoothToPath">smoothToPath</a></li>
 				</ul>
 			</li>
 			
@@ -88,8 +104,24 @@
         Viewer
         </h2>
         
-            <div class="class-description"><p>Manages an OpenLIME viewer functionality on a canvas
-how do I write more substantial documentation.</p></div>
+            <div class="class-description"><p><em>Viewer</em>* is the central class of the OpenLIME framework. It is used to create a viewer on a web page and manipulate it.
+In the following example, after instantiating a Viewer, a LayerImage is added to it.</p>
+<pre class="prettyprint source"><code>// Create an OpenLIME canvas into .openlime
+const lime = new OpenLIME.Viewer('.openlime');
+
+// Create an image layer and add it to the canvans
+const layer = new OpenLIME.Layer({
+    layout: 'image',
+    type: 'image',
+    url: '../../assets/lime/image/lime.jpg'
+});
+lime.addLayer('Base', layer);
+
+// Access to internal structures
+const camera = lime.camera;
+const canvas = lime.canvas;
+const layers = canvas.layers;
+</code></pre></div>
         
     
 </header>
@@ -101,12 +133,19 @@ how do I write more substantial documentation.</p></div>
         
 <hr>
 <dt>
-    <h4 class="name" id="Viewer"><span class="type-signature"></span>new Viewer(div, options, options)</h4>
+    <h4 class="name" id="Viewer"><span class="type-signature"></span>new Viewer(div [, options])</h4>
     
     
 </dt>
 <dd>
 
+    
+    <div class="description">
+        <p>Instantiates a viewer object given the <code>div</code> element or a DOM selector of a <code>div</code> element.
+Additionally, an object literal with Viewer <code>options</code> can be specified.
+The class creates the canvas, enables the WebGL context and takes care of the content redrawing when needed.
+Viewer is the main class of the OpenLIME framework. It allows access to all the internal structures that make up the system.</p>
+    </div>
     
 
     
@@ -128,6 +167,8 @@ how do I write more substantial documentation.</p></div>
         <th>Type</th>
 
         
+        <th>Argument</th>
+        
 
         
 
@@ -146,30 +187,9 @@ how do I write more substantial documentation.</p></div>
             <td class="type">
             
                 
-<span class="param-type">div</span>
+<span class="param-type">HTMLElement</span>
+|
 
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>of the DOM or selector (es. '#canvasid'), or a canvas.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
 <span class="param-type">string</span>
 
 
@@ -178,10 +198,18 @@ how do I write more substantial documentation.</p></div>
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>is a url to a JSON describing the viewer content</p></td>
+            <td class="description last"><p>A DOM element or a selector (es. '#openlime' or '.openlime').</p></td>
         </tr>
 
     
@@ -194,7 +222,62 @@ how do I write more substantial documentation.</p></div>
             <td class="type">
             
                 
-<span class="param-type">object</span>
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>An object literal describing the viewer content.</p>
+                <h6 class="method-params-label method-subparams-label">Properties</h6>
+                
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>background</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">color</span>
 
 
 
@@ -204,12 +287,49 @@ how do I write more substantial documentation.</p></div>
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last"><p>is a JSON describing the viewer content</p>
-<ul>
-<li><strong>animate</strong>: default <em>true</em>, calls requestAnimation() and manages refresh.</li>
-<li><strong>background</strong>: css style for background (overwrites css if present)</li>
-</ul></td>
+            <td class="description last"><p>CSS style for background (it overwrites CSS if present).</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>autofit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last"><p>Whether the initial position of the camera is set to fit the scene model.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -254,7 +374,7 @@ how do I write more substantial documentation.</p></div>
 		<ul class="dummy">
 			<li>
 				<a href="Viewer.js.html">Viewer.js</a>,
-				 <a href="Viewer.js.html#sunlight-1-line-21">line 21</a>
+				 <a href="Viewer.js.html#sunlight-1-line-26">line 26</a>
 			</li>
 		</ul>
 	</dd>
@@ -281,13 +401,6 @@ how do I write more substantial documentation.</p></div>
     
 
     
-        <h5>Example</h5>
-        
-    <pre class="sunlight-highlight-javascript">const lime = new OpenLIME.OpenLIME(&#x27;.openlime&#x27;);
-// .openlime is the class of a DIV element in the DOM.</pre>
-
-
-    
 </dd>
 
     
@@ -312,7 +425,7 @@ how do I write more substantial documentation.</p></div>
             
 <hr>
 <dt>
-    <h4 class="name" id="draw"><span class="type-signature"></span>draw(time)</h4>
+    <h4 class="name" id="addController"><span class="type-signature"></span>addController(controller)</h4>
     
     
 </dt>
@@ -320,7 +433,7 @@ how do I write more substantial documentation.</p></div>
 
     
     <div class="description">
-        <p>Do not call this if OpenLIME is animating, use redraw()</p>
+        <p>Adds a device event controller to the viewer.</p>
     </div>
     
 
@@ -355,13 +468,13 @@ how do I write more substantial documentation.</p></div>
 
         <tr>
             
-                <td class="name"><code>time</code></td>
+                <td class="name"><code>controller</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">time</span>
+<span class="param-type"><a href="Controller.html">Controller</a></span>
 
 
 
@@ -372,7 +485,7 @@ how do I write more substantial documentation.</p></div>
 
             
 
-            <td class="description last"><p>as in performance.now()</p></td>
+            <td class="description last"><p>An OpenLIME controller.</p></td>
         </tr>
 
     
@@ -417,7 +530,169 @@ how do I write more substantial documentation.</p></div>
 		<ul class="dummy">
 			<li>
 				<a href="Viewer.js.html">Viewer.js</a>,
-				 <a href="Viewer.js.html#sunlight-1-line-109">line 109</a>
+				 <a href="Viewer.js.html#sunlight-1-line-96">line 96</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="addLayer"><span class="type-signature"></span>addLayer(id, layer)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Adds the given layer to the Viewer.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>A label to identify the layer.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>layer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Layer.html">Layer</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An OpenLIME Layer object.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Viewer.js.html">Viewer.js</a>,
+				 <a href="Viewer.js.html#sunlight-1-line-104">line 104</a>
 			</li>
 		</ul>
 	</dd>
@@ -458,7 +733,7 @@ how do I write more substantial documentation.</p></div>
 
     
     <div class="description">
-        <p>Schedule a drawing.</p>
+        <p>Schedules a redrawing.</p>
     </div>
     
 
@@ -505,7 +780,7 @@ how do I write more substantial documentation.</p></div>
 		<ul class="dummy">
 			<li>
 				<a href="Viewer.js.html">Viewer.js</a>,
-				 <a href="Viewer.js.html#sunlight-1-line-100">line 100</a>
+				 <a href="Viewer.js.html#sunlight-1-line-142">line 142</a>
 			</li>
 		</ul>
 	</dd>
@@ -538,7 +813,7 @@ how do I write more substantial documentation.</p></div>
             
 <hr>
 <dt>
-    <h4 class="name" id="resize"><span class="type-signature"></span>resize()</h4>
+    <h4 class="name" id="removeLayer"><span class="type-signature"></span>removeLayer(layer)</h4>
     
     
 </dt>
@@ -546,7 +821,7 @@ how do I write more substantial documentation.</p></div>
 
     
     <div class="description">
-        <p>Resize the canvas (and the overlay) and triggers a redraw.</p>
+        <p>Remove the given layer from the Viewer.</p>
     </div>
     
 
@@ -555,6 +830,59 @@ how do I write more substantial documentation.</p></div>
     
 
     
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>layer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Layer.html">Layer</a></span>
+|
+
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An OpenLIME Layer or a Layer identifier.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
     
 
     
@@ -593,7 +921,7 @@ how do I write more substantial documentation.</p></div>
 		<ul class="dummy">
 			<li>
 				<a href="Viewer.js.html">Viewer.js</a>,
-				 <a href="Viewer.js.html#sunlight-1-line-86">line 86</a>
+				 <a href="Viewer.js.html#sunlight-1-line-112">line 112</a>
 			</li>
 		</ul>
 	</dd>

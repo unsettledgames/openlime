@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Class: LayerCombiner</title>
+	<title>OpenLIME Class: Controller2D</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -95,18 +95,20 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: LayerCombiner</h1>
+	<h1 class="page-title">Class: Controller2D</h1>
 <section>
 
 <header>
     
         <h2>
-        LayerCombiner
+        Controller2D
         </h2>
         
-            <div class="class-description"><p>Combines other layers (in the framebuffer) using a custom shader. <a href="LayerLens.html">LayerLens</a> is an example.
-The class LayerImage can also be instantiated via the Layer parent class and <code>options.type='combiner'</code>.</p>
-<p>Extends <a href="Layer.html">Layer</a>.</p></div>
+            <div class="class-description"><p><em>Controller2D</em>* intercepts pan and single-tap events in the canvas and updates a 2D position (x, y) of the device pointer.
+If <code>options.relative</code> is false the coordinates are both mapped between [-1, 1] with origin in the bottom left corner of the canvas,
+otherwise the coordinates have origin in the initial position of the panning and ranges both between [-1, 1] according to the distance
+from the local origin (multiplied by a <code>options.speed</code> value).
+When updated, the (x, y) position is passed to a <code>callback</code> for further custom computations.</p></div>
         
     
 </header>
@@ -118,12 +120,16 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
         
 <hr>
 <dt>
-    <h4 class="name" id="LayerCombiner"><span class="type-signature"></span>new LayerCombiner(options)</h4>
+    <h4 class="name" id="Controller2D"><span class="type-signature"></span>new Controller2D(callback [, options])</h4>
     
     
 </dt>
 <dd>
 
+    
+    <div class="description">
+        <p>Instantiates a Controller2D object.</p>
+    </div>
     
 
     
@@ -145,6 +151,8 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
         <th>Type</th>
 
         
+        <th>Argument</th>
+        
 
         
 
@@ -157,13 +165,100 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
 
         <tr>
             
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#updatePosition">updatePosition</a></span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The callback invoked when the postion (x, y) is updated.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>options</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">options</span>
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>An object literal with controller parameters.</p>
+                <h6 class="method-params-label method-subparams-label">Properties</h6>
+                
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>relative</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
 
 
 
@@ -173,8 +268,51 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
             
 
             
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
 
-            <td class="description last"><p>Same as <a href="Layer.html">Layer</a>, but <code>options.layers</code> are required</p></td>
+            <td class="description last"><p>Whether the coordinate system is local.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>speed</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    2.0
+                
+                </td>
+            
+
+            <td class="description last"><p>Enhancement factor for computation of local coordinates.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -218,8 +356,8 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="LayerCombiner.js.html">LayerCombiner.js</a>,
-				 <a href="LayerCombiner.js.html#sunlight-1-line-28">line 28</a>
+				<a href="Controller2D.js.html">Controller2D.js</a>,
+				 <a href="Controller2D.js.html#sunlight-1-line-21">line 21</a>
 			</li>
 		</ul>
 	</dd>
@@ -246,28 +384,6 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
     
 
     
-        <h5>Example</h5>
-        
-    <pre class="sunlight-highlight-javascript">// Instantiate the LayerCombiner class and set the two inputs (layer0 and layer1)
-const combiner = new OpenLIME.Layer({
-    type: &#x27;combiner&#x27;,
-    visible: true,
-    layers: [layer0, layer1]
-});
-
-// Instantiate the ShaderCombiner class (a custom shader) and select &#x27;diff&#x27; as default mode (for visualization purposes)
-const shader = new OpenLIME.ShaderCombiner();
-shader.mode = &#x27;diff&#x27;;
-
-// Assign the newly created shader to the combiner (labelling it &#x27;standard&#x27;) and enable it
-combiner.shaders = { &#x27;standard&#x27;: shader };
-combiner.setShader(&#x27;standard&#x27;);
-
-// Add the combiner to the canvas
-lime.addLayer(&#x27;combiner&#x27;, combiner);</pre>
-
-
-    
 </dd>
 
     
@@ -285,6 +401,172 @@ lime.addLayer(&#x27;combiner&#x27;, combiner);</pre>
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<hr>
+<dt>
+    <h4 class="name" id="setPosition"><span class="type-signature"></span>setPosition(x, y)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Stores the final position for local coordinate system. This is a convenience function to be used in callback.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>x</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The x-axis coordinate.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>y</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The y-axis coordinate.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="Controller2D.js.html">Controller2D.js</a>,
+				 <a href="Controller2D.js.html#sunlight-1-line-49">line 49</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        </dl>
     
 
     

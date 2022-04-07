@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Class: LayerCombiner</title>
+	<title>OpenLIME Class: ControllerPanZoom</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -95,18 +95,16 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: LayerCombiner</h1>
+	<h1 class="page-title">Class: ControllerPanZoom</h1>
 <section>
 
 <header>
     
         <h2>
-        LayerCombiner
+        ControllerPanZoom
         </h2>
         
-            <div class="class-description"><p>Combines other layers (in the framebuffer) using a custom shader. <a href="LayerLens.html">LayerLens</a> is an example.
-The class LayerImage can also be instantiated via the Layer parent class and <code>options.type='combiner'</code>.</p>
-<p>Extends <a href="Layer.html">Layer</a>.</p></div>
+            <div class="class-description"><p><em>ControllerPanZoom</em>* intercepts pan, zoom, single tap, and wheel events in the canvas and updates the scene camera parameters.</p></div>
         
     
 </header>
@@ -118,12 +116,16 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
         
 <hr>
 <dt>
-    <h4 class="name" id="LayerCombiner"><span class="type-signature"></span>new LayerCombiner(options)</h4>
+    <h4 class="name" id="ControllerPanZoom"><span class="type-signature"></span>new ControllerPanZoom(camera [, options])</h4>
     
     
 </dt>
 <dd>
 
+    
+    <div class="description">
+        <p>Instantiates a ControllerPanZoom object.</p>
+    </div>
     
 
     
@@ -145,6 +147,8 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
         <th>Type</th>
 
         
+        <th>Argument</th>
+        
 
         
 
@@ -157,13 +161,100 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
 
         <tr>
             
+                <td class="name"><code>camera</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Camera.html">Camera</a></span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The scene camera.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>options</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">options</span>
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>An object literal with controller parameters.</p>
+                <h6 class="method-params-label method-subparams-label">Properties</h6>
+                
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>zoomAmount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
 
 
 
@@ -173,8 +264,21 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
             
 
             
+                <td class="default">
+                
+                    1.2
+                
+                </td>
+            
 
-            <td class="description last"><p>Same as <a href="Layer.html">Layer</a>, but <code>options.layers</code> are required</p></td>
+            <td class="description last"><p>The incremental value for zoom in/out.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -218,8 +322,8 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="LayerCombiner.js.html">LayerCombiner.js</a>,
-				 <a href="LayerCombiner.js.html#sunlight-1-line-28">line 28</a>
+				<a href="ControllerPanZoom.js.html">ControllerPanZoom.js</a>,
+				 <a href="ControllerPanZoom.js.html#sunlight-1-line-5">line 5</a>
 			</li>
 		</ul>
 	</dd>
@@ -244,28 +348,6 @@ The class LayerImage can also be instantiated via the Layer parent class and <co
     
 
     
-
-    
-        <h5>Example</h5>
-        
-    <pre class="sunlight-highlight-javascript">// Instantiate the LayerCombiner class and set the two inputs (layer0 and layer1)
-const combiner = new OpenLIME.Layer({
-    type: &#x27;combiner&#x27;,
-    visible: true,
-    layers: [layer0, layer1]
-});
-
-// Instantiate the ShaderCombiner class (a custom shader) and select &#x27;diff&#x27; as default mode (for visualization purposes)
-const shader = new OpenLIME.ShaderCombiner();
-shader.mode = &#x27;diff&#x27;;
-
-// Assign the newly created shader to the combiner (labelling it &#x27;standard&#x27;) and enable it
-combiner.shaders = { &#x27;standard&#x27;: shader };
-combiner.setShader(&#x27;standard&#x27;);
-
-// Add the combiner to the canvas
-lime.addLayer(&#x27;combiner&#x27;, combiner);</pre>
-
 
     
 </dd>

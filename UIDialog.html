@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Class: Controller</title>
+	<title>OpenLIME Class: UIDialog</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -95,41 +95,18 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: Controller</h1>
+	<h1 class="page-title">Class: UIDialog</h1>
 <section>
 
 <header>
     
         <h2>
-        Controller
+        UIDialog
         </h2>
         
-            <div class="class-description"><p><strong>Controller</strong> is a virtual base class that handles user interaction via device events (mouse/touch events).
-It provides an abstract user interface to define interaction actions such as panning, pinching, tapping, etc...
-The actions are implemented by pre-defined callback functions:</p>
-<ul>
-<li><code>panStart(e)</code> intercepts the initial pan event (movement of the mouse after pressing a mouse button or moving a finger).
-The event is captured calling <code>e.preventDefault()</code>.</li>
-<li><code>panMove(e)</code> receives and handles the pan event.</li>
-<li><code>panEnd(e)</code> intercepts the final pan event (the user releases the left mouse button or removes his finger from the screen).</li>
-<li><code>pinchStart(e1, e2)</code> intercepts the initial pinch event (a continuous gesture that tracks the positions between the first two fingers that touch the screen).
-The event is captured calling <code>e1.preventDefault()</code>.</li>
-<li><code>pinchMove(e1,e2)</code> receives and handles the pinch event.</li>
-<li><code>pinchEnd(e1,e2)</code> intercepts the final pinch event (the user removes one of their two fingers from the screen).</li>
-<li><code>mouseWheel(e)</code> receives and handles the mouse wheel event (the user rotates the mouse wheel button).</li>
-<li><code>fingerSingleTap(e)</code> receives and handles the single-tap event (the user presses a mouse button quickly or touches the screen shortly with a finger).</li>
-<li><code>fingerDoubleTap(e)</code> receives and handles the double-tap event (the user quickly presses a mouse button twice or shortly touches the screen with a finger twice).</li>
-</ul>
-<p><code>e.preventDefault()</code> will capture the event and wont be propagated to other controllers.</p>
-<p>This class only describes user interactions by implementing actions or callbacks. A <strong>Controller</strong> works in concert with a <strong>PointerManager</strong> object
-that emits events and links them to actions.</p>
-<p>In the example below a <strong>ControllerPanZoom</strong> object (derived from <strong>Controller</strong>) is created and associated with the <code>pointerManager</code> of the <code>viewer</code>.</p>
-<pre class="prettyprint source"><code>const panzoom = new OpenLIME.ControllerPanZoom(viewer.camera, {
-    priority: -1000,
-    activeModifiers: [0, 1]
-});
-viewer.pointerManager.onEvent(panzoom);
-</code></pre></div>
+            <div class="class-description"><p>A <strong>UIDialog</strong> is a top-level window used for communications with the user. It may be modal or modeless.
+The content of the dialog can be either an HTML text or a pre-built DOM element.
+When hidden, a dialog emits a 'closed' event.</p></div>
         
     
 </header>
@@ -141,7 +118,7 @@ viewer.pointerManager.onEvent(panzoom);
         
 <hr>
 <dt>
-    <h4 class="name" id="Controller"><span class="type-signature"></span>new Controller( [options])</h4>
+    <h4 class="name" id="UIDialog"><span class="type-signature"></span>new UIDialog(container [, options])</h4>
     
     
 </dt>
@@ -149,7 +126,7 @@ viewer.pointerManager.onEvent(panzoom);
 
     
     <div class="description">
-        <p>Instantiates a Controller object.</p>
+        <p>Instatiates a UIDialog object.</p>
     </div>
     
 
@@ -186,6 +163,38 @@ viewer.pointerManager.onEvent(panzoom);
 
         <tr>
             
+                <td class="name"><code>container</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The HTMLElement on which the dialog is focused</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>options</code></td>
             
 
@@ -213,7 +222,7 @@ viewer.pointerManager.onEvent(panzoom);
 
             
 
-            <td class="description last"><p>An object literal with controller parameters.</p>
+            <td class="description last"><p>An object literal with UIDialog parameters.</p>
                 <h6 class="method-params-label method-subparams-label">Properties</h6>
                 
 
@@ -229,8 +238,6 @@ viewer.pointerManager.onEvent(panzoom);
         
 
         
-        <th>Default</th>
-        
 
         <th class="last">Description</th>
     </tr>
@@ -241,13 +248,13 @@ viewer.pointerManager.onEvent(panzoom);
 
         <tr>
             
-                <td class="name"><code>panDelay</code></td>
+                <td class="name"><code>modal</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">bool</span>
 
 
 
@@ -257,74 +264,8 @@ viewer.pointerManager.onEvent(panzoom);
             
 
             
-                <td class="default">
-                
-                    50
-                
-                </td>
-            
 
-            <td class="description last"><p>Inertial value of the movement in ms for panning movements.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>zoomDelay</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                    200
-                
-                </td>
-            
-
-            <td class="description last"><p>A zoom event is smoothed over this delay in ms,</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>priority</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                    0
-                
-                </td>
-            
-
-            <td class="description last"><p>Higher priority controllers are invoked first.</p></td>
+            <td class="description last"><p>Whether the dialog is modal.</p></td>
         </tr>
 
     
@@ -375,8 +316,8 @@ viewer.pointerManager.onEvent(panzoom);
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="Controller.js.html">Controller.js</a>,
-				 <a href="Controller.js.html#sunlight-1-line-31">line 31</a>
+				<a href="UIBasic.js.html">UIBasic.js</a>,
+				 <a href="UIBasic.js.html#sunlight-1-line-679">line 679</a>
 			</li>
 		</ul>
 	</dd>
@@ -427,7 +368,7 @@ viewer.pointerManager.onEvent(panzoom);
             
 <hr>
 <dt>
-    <h4 class="name" id="modifierState"><span class="type-signature"></span>modifierState(e)</h4>
+    <h4 class="name" id="addEvent"><span class="type-signature"></span>addEvent(event, callback)</h4>
     
     
 </dt>
@@ -435,16 +376,7 @@ viewer.pointerManager.onEvent(panzoom);
 
     
     <div class="description">
-        <p>Returns the modifier state of the event <code>e</code>. Modifiers are keyboard events that happens simultaneously
-with a device event (e.g. shift + left mouse button).
-The modifiers handled by a controller are:</p>
-<ul>
-<li>NoModifiers = 0</li>
-<li>CrtlModifier = 1</li>
-<li>ShiftModifier = 2</li>
-<li>AltModifier = 4</li>
-</ul>
-<p>The modifier state is the sum of values above corresponding to the key pressed (CTRL, SHIFT or ALT).</p>
+        <p>Adds a 'closed' event callback.</p>
     </div>
     
 
@@ -479,13 +411,13 @@ The modifiers handled by a controller are:</p>
 
         <tr>
             
-                <td class="name"><code>e</code></td>
+                <td class="name"><code>event</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Event</span>
+<span class="param-type">string</span>
 
 
 
@@ -496,7 +428,31 @@ The modifiers handled by a controller are:</p>
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>A label to identify the event.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The event callback function.</p></td>
         </tr>
 
     
@@ -540,8 +496,8 @@ The modifiers handled by a controller are:</p>
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="Controller.js.html">Controller.js</a>,
-				 <a href="Controller.js.html#sunlight-1-line-66">line 66</a>
+				<a href="UIBasic.js.html">UIBasic.js</a>,
+				 <a href="UIBasic.js.html#sunlight-1-line-703">line 703</a>
 			</li>
 		</ul>
 	</dd>
@@ -566,30 +522,599 @@ The modifiers handled by a controller are:</p>
     
 
     
-    <h5>Returns:</h5>
+
     
-            
-<div class="param-desc">
-    <p>The modifier state.</p>
-</div>
+</dd>
 
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
         
-<span class="param-type">number</span>
+            
+<hr>
+<dt>
+    <h4 class="name" id="fade"><span class="type-signature"></span>fade(on)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Adds fading effect to the dialog.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>on</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
 
 
 
-    </dd>
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Whether the fading effect is enabled.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="UIBasic.js.html">UIBasic.js</a>,
+				 <a href="UIBasic.js.html#sunlight-1-line-789">line 789</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
 </dl>
 
 
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
         
+            
+<hr>
+<dt>
+    <h4 class="name" id="hide"><span class="type-signature"></span>hide()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Hides the dialog.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="UIBasic.js.html">UIBasic.js</a>,
+				 <a href="UIBasic.js.html#sunlight-1-line-776">line 776</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="setContent"><span class="type-signature"></span>setContent(html)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Sets the content of the dialog.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>html</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">HTMLElement</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The content of the dialog (a HTML text or element).</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="UIBasic.js.html">UIBasic.js</a>,
+				 <a href="UIBasic.js.html#sunlight-1-line-759">line 759</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="show"><span class="type-signature"></span>show()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Shows the dialog.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="UIBasic.js.html">UIBasic.js</a>,
+				 <a href="UIBasic.js.html#sunlight-1-line-769">line 769</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="toggle"><span class="type-signature"></span>toggle(force)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Toggles the display of the dialog.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>force</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">bool</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Whether to turn the dialog into a one way-only operation.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="UIBasic.js.html">UIBasic.js</a>,
+				 <a href="UIBasic.js.html#sunlight-1-line-797">line 797</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
 
     
 </dd>
@@ -599,6 +1124,98 @@ The modifiers handled by a controller are:</p>
 
     
 
+    
+        <h3 class="subsection-title">Events</h3>
+
+        <dl>
+            
+<hr>
+<dt>
+    <h4 class="name" id="event:closed">closed</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>The event is fired when the dialog is closed.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="UIBasic.js.html">UIBasic.js</a>,
+				 <a href="UIBasic.js.html#sunlight-1-line-777">line 777</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        </dl>
     
 </article>
 

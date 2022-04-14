@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>OpenLIME Class: Controller2D</title>
+	<title>OpenLIME Class: FocusContext</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -95,20 +95,21 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: Controller2D</h1>
+	<h1 class="page-title">Class: FocusContext</h1>
 <section>
 
 <header>
     
         <h2>
-        Controller2D
+        FocusContext
         </h2>
         
-            <div class="class-description"><p><em>Controller2D</em>* intercepts pan and single-tap events in the canvas and updates a 2D position (x, y) of the device pointer.
-If <code>options.relative</code> is false the coordinates are both mapped between [-1, 1] with origin in the bottom left corner of the canvas,
-otherwise the coordinates have origin in the initial position of the panning and ranges both between [-1, 1] according to the distance
-from the local origin (multiplied by a <code>options.speed</code> value).
-When updated, the (x, y) position is passed to a <code>callback</code> for further custom computations.</p></div>
+            <div class="class-description"><p>The FocusContext class is responsible for identifying a good Focus and Context situation.
+During interaction it distributes user inputs on lens, into camera and lens movement
+in order to keep the lens in focus and context situation, within the viewport, with enough
+space between the lens and the viewport boundaries, for both panning and zooming actions.
+It also computes a good transform given a lens to properly display the lens within
+the current viewport (used for stored annotations)</p></div>
         
     
 </header>
@@ -120,205 +121,19 @@ When updated, the (x, y) position is passed to a <code>callback</code> for furth
         
 <hr>
 <dt>
-    <h4 class="name" id="Controller2D"><span class="type-signature"></span>new Controller2D(callback [, options])</h4>
+    <h4 class="name" id="FocusContext"><span class="type-signature"></span>new FocusContext()</h4>
     
     
 </dt>
 <dd>
 
     
-    <div class="description">
-        <p>Instantiates a Controller2D object.</p>
-    </div>
-    
 
     
 
     
 
     
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Argument</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#updatePosition">updatePosition</a></span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>The callback invoked when the postion (x, y) is updated.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>An object literal with controller parameters.</p>
-                <h6 class="method-params-label method-subparams-label">Properties</h6>
-                
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>relative</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">bool</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
-
-            <td class="description last"><p>Whether the coordinate system is local.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>speed</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                    2.0
-                
-                </td>
-            
-
-            <td class="description last"><p>Enhancement factor for computation of local coordinates.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
     
 
     
@@ -356,8 +171,8 @@ When updated, the (x, y) position is passed to a <code>callback</code> for furth
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="Controller2D.js.html">Controller2D.js</a>,
-				 <a href="Controller2D.js.html#sunlight-1-line-21">line 21</a>
+				<a href="FocusContext.js.html">FocusContext.js</a>,
+				 <a href="FocusContext.js.html#sunlight-1-line-11">line 11</a>
 			</li>
 		</ul>
 	</dd>
@@ -408,7 +223,7 @@ When updated, the (x, y) position is passed to a <code>callback</code> for furth
             
 <hr>
 <dt>
-    <h4 class="name" id="setPosition"><span class="type-signature"></span>setPosition(x, y)</h4>
+    <h4 class="name" id=".adaptContextPosition"><span class="type-signature">&lt;static> </span>adaptContextPosition(viewport, focus, context)</h4>
     
     
 </dt>
@@ -416,7 +231,7 @@ When updated, the (x, y) position is passed to a <code>callback</code> for furth
 
     
     <div class="description">
-        <p>Stores the final position for local coordinate system. This is a convenience function to be used in callback.</p>
+        <p>Translate context in order to put lens (focus) in focus and context condition</p>
     </div>
     
 
@@ -451,13 +266,13 @@ When updated, the (x, y) position is passed to a <code>callback</code> for furth
 
         <tr>
             
-                <td class="name"><code>x</code></td>
+                <td class="name"><code>viewport</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">*</span>
 
 
 
@@ -468,20 +283,20 @@ When updated, the (x, y) position is passed to a <code>callback</code> for furth
 
             
 
-            <td class="description last"><p>The x-axis coordinate.</p></td>
+            <td class="description last"><p>{x,y,dx,dy,w,h}</p></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>y</code></td>
+                <td class="name"><code>focus</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">*</span>
 
 
 
@@ -492,7 +307,31 @@ When updated, the (x, y) position is passed to a <code>callback</code> for furth
 
             
 
-            <td class="description last"><p>The y-axis coordinate.</p></td>
+            <td class="description last"><p>lens : {position,radius}</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Transform.html">Transform</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
         </tr>
 
     
@@ -536,8 +375,638 @@ When updated, the (x, y) position is passed to a <code>callback</code> for furth
 	<dd class="tag-source">
 		<ul class="dummy">
 			<li>
-				<a href="Controller2D.js.html">Controller2D.js</a>,
-				 <a href="Controller2D.js.html#sunlight-1-line-49">line 49</a>
+				<a href="FocusContext.js.html">FocusContext.js</a>,
+				 <a href="FocusContext.js.html#sunlight-1-line-115">line 115</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".adaptContextScale"><span class="type-signature">&lt;static> </span>adaptContextScale(viewport, focus, context)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Fix context scale to make projected lens fit within viewport.</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>viewport</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>{x, y, dx, dy, w, h}</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>focus</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>lens : {position,radius}. Contain current lens in dataset coords, which will be updated</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Transform.html">Transform</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Contain current transform, whose scale will be updated to keep lens in focus and context after scale</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="FocusContext.js.html">FocusContext.js</a>,
+				 <a href="FocusContext.js.html#sunlight-1-line-98">line 98</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".pan"><span class="type-signature">&lt;static> </span>pan(viewport, focus, context, delta, imageSize)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Subdivide pan amount (delta) between lens (focus) and camera transform (context).</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>viewport</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>{x, y, dx, dy, w, h}</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>focus</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>lens : {position,radius}. Contain current lens in dataset coords, which will be updated to translated lens</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Transform.html">Transform</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Contain current transform, which  will be updated to translated context</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>delta</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>amount of pan in dataset pixels</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>imageSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>{w,h} Size of the dataset width height (to clamp movement on boundaries)</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="FocusContext.js.html">FocusContext.js</a>,
+				 <a href="FocusContext.js.html#sunlight-1-line-21">line 21</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id=".scale"><span class="type-signature">&lt;static> </span>scale(camera, focus, context, dz)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>Distribute scale between radius and camera scale in order to keep focus and context situation</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>camera</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Camera.html">Camera</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>focus</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>lens : {position,radius}. Contain current lens in dataset coords, which will be updated to translated lens</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Transform.html">Transform</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Contain current transform, which  will be updated to translated context</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dz</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>amount of scale (which should multiply scale)</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="FocusContext.js.html">FocusContext.js</a>,
+				 <a href="FocusContext.js.html#sunlight-1-line-54">line 54</a>
 			</li>
 		</ul>
 	</dd>

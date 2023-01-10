@@ -2,10 +2,11 @@ import { Viewer } from './Viewer.js'
 import { Layer } from './Layer.js'
 import { LayerImage } from './LayerImage.js'
 import { LayerDstretch } from './LayerDstretch.js'
+import { ShaderFilterLevelCurves } from './ShaderFilterLevelCurves.js'
 import { LayerCombiner } from './LayerCombiner.js'
 import { ShaderCombiner } from './ShaderCombiner.js'
 import { ControllerPanZoom } from './ControllerPanZoom.js'
-import { UIBasic } from './UIBasic.js'
+import { UIBasic, UIDialog } from './UIBasic.js'
 import { LayerLens } from './LayerLens.js'
 import { Skin } from './Skin.js'
 import { LayerAnnotation } from './LayerAnnotation.js'
@@ -14,7 +15,8 @@ import { EditorSvgAnnotation } from './EditorSvgAnnotation.js'
 
 let lime = new Viewer('.openlime', { background: 'black', canvas: { preserveDrawingBuffer: true} });
 
-dstretchTest();
+heightmapTest();
+//dstretchTest();
 //combinerTest();
 //imageTest('google'); // image google deepzoom deepzoom1px zoomify iiif tarzoon itarzoom
 //flipTest();
@@ -30,6 +32,29 @@ dstretchTest();
 //testMedicalAnnotations();
 
 //testAnnotationEditor();
+
+function heightmapTest() {
+	let mapLayer = new Layer({
+		type: 'image',
+		layout: 'image',
+		url: 'assets/heightmap/elevation3.png'
+	});
+
+	// Filter to decode heightmaps?
+
+	let curveFilter = new ShaderFilterLevelCurves({
+		nCurves: 5,
+		strokeColor: [1,0,0,1],
+		thickness: 2,
+		url: 'assets/heightmap/info.json'
+	});
+
+	mapLayer.addShaderFilter(curveFilter);
+	lime.canvas.addLayer('Heightmap', mapLayer);
+
+	let ui = new UIBasic(lime);
+	ui.actions.light.active = false;
+}
 
 function dstretchTest() {
 	console.log("Dstretching");

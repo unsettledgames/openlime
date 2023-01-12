@@ -37,14 +37,14 @@ function heightmapTest() {
 	let mapLayer = new Layer({
 		type: 'image',
 		layout: 'image',
-		url: 'assets/heightmap/elevation3.png'
+		url: 'assets/heightmap/encoded.jpg'
 	});
 
 	// Filter to decode heightmaps?
 
 	let curveFilter = new ShaderFilterLevelCurves({
 		nCurves: 5,
-		strokeColor: [1,0,0,1],
+		strokeColor: [0,0,0,1],
 		thickness: 2,
 		url: 'assets/heightmap/info.json'
 	});

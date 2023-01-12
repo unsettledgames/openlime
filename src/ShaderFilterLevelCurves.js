@@ -76,34 +76,8 @@ class ShaderFilterLevelCurves extends ShaderFilter {
 
     fragDataSrc(gl) {
         return `
-            vec3 ${this.functionName()}transposeToHilbertCoords(vec3 data, int nBits, int nComps) {
-                int M = 1 << (nBits - 1), P, Q, t;
-                ivec3 ret = ivec3(int(data.x), int(data.y), int(data.z));
-
-                // Inverse undo
-                for (Q = M; Q > 1; Q >>= 1) {
-                    P = Q - 1;
-                    for (int i = 0; i < nComps; i++)
-                        if ((ret[i] & Q) == 1) // Invert
-                            ret[0] ^= P;
-                        else { // Exchange
-                            t = (ret[0] ^ ret[i]) & P;
-                            ret[0] ^= t;
-                            ret[i] ^= t;
-                        }
-                }
-
-                // Gray encode
-                for (int i = 1; i < nComps; i++) ret[i] ^= ret[i - 1];
-                t = 0;
-                for (Q = M; Q > 1; Q >>= 1)
-                    if ((ret[nComps - 1] & Q) == 1) t ^= Q - 1;
-                for (int i = 0; i < nComps; i++) ret[i] ^= t;
-
-                return vec3(float(ret.x),float(ret.y),float(ret.z));
-            }
-
-            float ${this.functionName()}vecToMorton(float r, float g, float b) {
+            // CORRECT
+            float vecToMorton(float r, float g, float b) {
                 int nbits = 6;
                 int nbits2 = 2 * nbits;
                 
@@ -119,12 +93,113 @@ class ShaderFilterLevelCurves extends ShaderFilter {
                 return float((codez << 2) | (codey << 1) | codex);
             }
 
-            float ${this.functionName()}vecToHilbert(float r, float g, float b) {
-                int nbits = 6;
-
-                vec3 v = ${this.functionName()}transposeToHilbertCoords(vec3(r,g,b), nbits, 3);
-                return ${this.functionName()}vecToMorton(v.z, v.y, v.x);
+            
+            int modi(int x, int y) {
+                return x - y * (x / y);
             }
+
+            int and(int a, int b) {
+                int result = 0;
+                int n = 1;
+            
+                for(int i = 0; i < 8; i++) {
+                    if ((modi(a, 2) == 1) && (modi(b, 2) == 1)) {
+                        result += n;
+                    }
+            
+                    a = a / 2;
+                    b = b / 2;
+                    n = n * 2;
+            
+                    if(!(a > 0 && b > 0)) {
+                        break;
+                    }
+                }
+                return result;
+            }
+
+            // BUG IS 100% HERE
+            vec3 TransposeToHilbertCoords(vec3 col, int nbits)
+            {
+                int X[3];
+                X[0] = int(col.x); X[1] = int(col.y); X[2] = int(col.z);
+
+                int M = 1 << (nbits - 1), P, Q, t;
+
+                // Inverse undo (bug is AT LEAST here)
+                // Bug probably is that it's not possible to isolate the required bit in cond
+                for (Q = M; Q > 1; Q /= 2) {
+                    P = Q - 1;
+                    for (int i = 0; i < 3; i++) {
+                        int cond = and(X[i], Q);
+                        if (cond != 0) // Invert
+                            X[0] ^= P;
+                        else { // Exchange
+                            t = (X[0] ^ X[i]) & P;
+                            X[0] ^= t;
+                            X[i] ^= t;
+                        }
+                    }
+                }
+                
+                // Gray encode
+                for (int i = 1; i < 3; i++) X[i] ^= X[i - 1];
+                t = 0;
+                for (Q = M; Q > 1; Q >>= 1) {
+                    int cond = and(X[3 - 1], Q);
+                    if (cond != 0) t ^= Q - 1;
+                }
+                for (int i = 0; i < 3; i++) X[i] ^= t;
+
+                return vec3(float(X[0]), float(X[1]), float(X[2]));
+            }
+
+            vec3 HilbertShrink(vec3 col) {
+                int occupancy[256];
+
+                int occSize = 0;
+                int occLast = -1;
+                vec3 ret = col;
+
+                if(occSize == 0) {
+                    occupancy[0] = 0;
+                    occSize++;
+
+                    int gap = 1;
+                    while(gap < 64) {
+                        int end = occSize;
+                        int last = occupancy[occSize-1];
+                        for(int i = 0; i < gap; i++) {
+                            if(i <= gap/2) {
+                                occupancy[occSize] = last;
+                                occSize++;
+                            }
+                            else {
+                                occupancy[occSize] = last+1;
+                                occSize++;
+                            }
+                        }
+
+                        for(int i = 0; i < end; i++) {
+                            occupancy[occSize] = occupancy[i] + last+1;
+                            occSize++;
+                        }
+                        gap *= 2;
+                    }
+                }
+                for(int k = 0; k < 3; k++)
+                    ret[k] = float(occupancy[int(ret[k])]);
+                return ret;
+            }
+
+            float vecToHilbert(vec3 col)
+            {
+                vec3 v = col;
+                //v = HilbertShrink(col);
+                v = TransposeToHilbertCoords(v, 6);
+                return vecToMorton(v.z, v.y, v.x);
+            }
+
 
             float ${this.functionName()}mod(float x, float y) {
                 return x - y * floor(x / y);
@@ -159,6 +234,16 @@ class ShaderFilterLevelCurves extends ShaderFilter {
                 return (L0 + ${this.functionName()}delta(L, Ha, Hb, m));
             }
 
+            float contourLine(float height, float contourCount)
+            {   
+                float contourOffset = fract(height*contourCount);
+                float nearestContourVerticalDistance = min(contourOffset, 1.-contourOffset)/contourCount;
+                float screenSpaceSlope = 2. *length(vec2(dFdx(height), dFdy(height)));
+                float screenSpaceDistance = nearestContourVerticalDistance/screenSpaceSlope;
+                return 1. - smoothstep(0., 1., screenSpaceDistance);
+            }
+
+
             vec4 ${this.functionName()}(vec4 col) {
                 float d;
 
@@ -169,13 +254,12 @@ class ShaderFilterLevelCurves extends ShaderFilter {
                     case 1:
                     {
                         float r = col.r, g = col.g, b = col.b;
-                        d = ${this.functionName()}vecToMorton(r * 255.0, g * 255.0, b * 255.0) / (65535.0);
+                        d = vecToMorton(r * 255.0, g * 255.0, b * 255.0) / (65535.0);
                         break;
                     }
                     case 2:
                     {
-                        float r = col.r, g = col.g, b = col.b;
-                        d = ${this.functionName()}vecToHilbert(r * 255.0, g * 255.0, b * 255.0) / (65535.0);
+                        d = vecToHilbert(col.xyz * 255.0) / (65535.0);
                         break;
                     }
                     case 3:
@@ -188,33 +272,11 @@ class ShaderFilterLevelCurves extends ShaderFilter {
                         break;
                 }
 
-                // D now contains a 16 bit depth value quantized to [0,1]
-                vec3 position = vec3(v_texcoord, d);
-                float nCurves = 16.0;//float(${this.uniformName("nCurves")});
-                float step = 1.0 / nCurves;
-                float currHeight = 0.0;
-                float fraction = 1.0 / 512.0;
-
-                vec4 top = textureOffset(kd, v_texcoord, ivec2(0, 1));
-                vec4 bottom = textureOffset(kd, v_texcoord, ivec2(0, -1));
-                vec4 left = textureOffset(kd, v_texcoord, ivec2(-1, 0));
-                vec4 right = textureOffset(kd, v_texcoord, ivec2(1, 0));
-
-                while (currHeight < 1.0) {
-                    float nIncluded = 0.0;
-                    nIncluded += abs(currHeight - decodeTriangle(top.r, top.g, top.b)) < fraction ? 1.0 : 0.0;
-                    nIncluded += abs(currHeight - decodeTriangle(bottom.r, bottom.g, bottom.b)) < fraction ? 1.0 : 0.0;
-                    nIncluded += abs(currHeight - decodeTriangle(left.r, left.g, left.b)) < fraction ? 1.0 : 0.0;
-                    nIncluded += abs(currHeight - decodeTriangle(right.r, right.g, right.b)) < fraction ? 1.0 : 0.0;
-                    nIncluded /= 4.0;
-
-                    vec3 col = mix(vec3(d), ${this.uniformName("strokeColor")}.xyz, 1.0 - nIncluded);
-
-                    float diff = abs(currHeight - d);
-                    if (diff < fraction)
-                        return vec4(col, 1.0);
-                    currHeight += step;
-                }
+                // Contour lines
+                /*float contour = contourLine(d, float(${this.uniformName("nCurves")}));
+                float grayscaleColor = d*(1.0-contour);
+                
+                return vec4(vec3(grayscaleColor), 1.0);*/
 
                 return vec4(vec3(d), 1.0);
             }
